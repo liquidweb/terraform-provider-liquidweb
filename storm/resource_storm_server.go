@@ -66,6 +66,14 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
+	config := m.(*Config)
+	uid := d.Id()
+	opts := make(map[string]interface{})
+	opts["uniq_id"] = uid
+	_, err := config.Client.Call("v1/Storm/Server/destroy", opts)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
