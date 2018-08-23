@@ -2,6 +2,7 @@ package storm
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
+	lwapi "github.com/liquidweb/go-lwApi"
 )
 
 func resourceServer() *schema.Resource {
@@ -58,10 +59,35 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceServerRead(d *schema.ResourceData, m interface{}) error {
+	opts := buildServerOpts(d, m)
+	uid := d.Id()
+	opts["uniq_id"] = uid
+	validOpts := pickDetailsOpts(opts)
+	config := m.(*Config)
+	_, err := config.Client.Call("v1/Storm/Server/details", validOpts)
+	if err != nil {
+		errClass, ok := err.(lwapi.LWAPIError)
+		if ok && errClass.ErrorClass == "LW::Exception::RecordNotFound" {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+
 	return nil
 }
 
 func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
+	opts := buildServerOpts(d, m)
+	uid := d.Id()
+	opts["uniq_id"] = uid
+	validOpts := pickUpdateOpts(opts)
+	config := m.(*Config)
+	_, err := config.Client.Call("v1/Storm/Server/update", validOpts)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -119,4 +145,34 @@ func buildServerOpts(d *schema.ResourceData, m interface{}) map[string]interface
 	smOpts["zone"] = so.Zone
 
 	return smOpts
+}
+
+// pickUpdateOpts returns a set of options valid for an update request.
+func pickUpdateOpts(opts map[string]interface{}) map[string]interface{} {
+	allowed := [6]string{"backup_enabled", "backup_plan", "backup_quota", "bandwidth_quota", "domain", "uniq_id"}
+	validOpts := make(map[string]interface{})
+
+	for _, af := range allowed {
+		f, ok := opts[af]
+		if ok {
+			validOpts[af] = f
+		}
+	}
+
+	return validOpts
+}
+
+// pickDetailsOpts returns a set of options valid for a details request.
+func pickDetailsOpts(opts map[string]interface{}) map[string]interface{} {
+	allowed := [6]string{"uniq_id"}
+	validOpts := make(map[string]interface{})
+
+	for _, af := range allowed {
+		f, ok := opts[af]
+		if ok {
+			validOpts[af] = f
+		}
+	}
+
+	return validOpts
 }
