@@ -596,6 +596,7 @@
     "github.com/hashicorp/terraform/plugin",
     "github.com/hashicorp/terraform/terraform",
     "github.com/liquidweb/go-lwApi",
+    "github.com/spf13/viper",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
