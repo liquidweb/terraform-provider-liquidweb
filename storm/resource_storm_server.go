@@ -176,7 +176,7 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 		Pending:    stormServerStates,
 		Refresh:    refreshStormServer(config, uid),
 		Target:     []string{"Running"},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Timeout:    20 * time.Minute,
 		MinTimeout: 5 * time.Second,
 	}
 	_, err = stateChange.WaitForState()
@@ -219,7 +219,7 @@ func resourceUpdateStormServer(d *schema.ResourceData, m interface{}) error {
 		Pending:    stormServerStates,
 		Refresh:    refreshStormServer(config, d.Id()),
 		Target:     []string{"Running"},
-		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Timeout:    20 * time.Minute,
 		MinTimeout: 5 * time.Second,
 	}
 	_, err = stateChange.WaitForState()
@@ -245,7 +245,7 @@ func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 		Pending:    stormServerStates,
 		Refresh:    refreshStormServer(config, d.Id()),
 		Target:     []string{"Running"},
-		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Timeout:    20 * time.Minute,
 		MinTimeout: 5 * time.Second,
 	}
 	_, err = stateChange.WaitForState()
