@@ -172,12 +172,13 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 	uid := resp["uniq_id"].(string)
 
 	stateChange := &resource.StateChangeConf{
-		Delay:      10 * time.Second,
-		Pending:    stormServerStates,
-		Refresh:    refreshStormServer(config, uid),
-		Target:     []string{"Running"},
-		Timeout:    20 * time.Minute,
-		MinTimeout: 5 * time.Second,
+		Delay:          10 * time.Second,
+		Pending:        stormServerStates,
+		Refresh:        refreshStormServer(config, uid),
+		Target:         []string{"Running"},
+		Timeout:        20 * time.Minute,
+		NotFoundChecks: 240,
+		MinTimeout:     5 * time.Second,
 	}
 	_, err = stateChange.WaitForState()
 	if err != nil {
@@ -215,12 +216,13 @@ func resourceUpdateStormServer(d *schema.ResourceData, m interface{}) error {
 	}
 
 	stateChange := &resource.StateChangeConf{
-		Delay:      10 * time.Second,
-		Pending:    stormServerStates,
-		Refresh:    refreshStormServer(config, d.Id()),
-		Target:     []string{"Running"},
-		Timeout:    20 * time.Minute,
-		MinTimeout: 5 * time.Second,
+		Delay:          10 * time.Second,
+		Pending:        stormServerStates,
+		Refresh:        refreshStormServer(config, d.Id()),
+		Target:         []string{"Running"},
+		Timeout:        20 * time.Minute,
+		NotFoundChecks: 240,
+		MinTimeout:     5 * time.Second,
 	}
 	_, err = stateChange.WaitForState()
 	if err != nil {
@@ -241,12 +243,13 @@ func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 	}
 
 	stateChange := &resource.StateChangeConf{
-		Delay:      10 * time.Second,
-		Pending:    stormServerStates,
-		Refresh:    refreshStormServer(config, d.Id()),
-		Target:     []string{"Running"},
-		Timeout:    20 * time.Minute,
-		MinTimeout: 5 * time.Second,
+		Delay:          10 * time.Second,
+		Pending:        stormServerStates,
+		Refresh:        refreshStormServer(config, d.Id()),
+		Target:         []string{"Running"},
+		Timeout:        20 * time.Minute,
+		NotFoundChecks: 240,
+		MinTimeout:     5 * time.Second,
 	}
 	_, err = stateChange.WaitForState()
 	if err != nil {
