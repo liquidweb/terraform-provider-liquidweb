@@ -1,7 +1,7 @@
 package main
 
 import (
-	"git.liquidweb.com/cnichols/terraform-provider-storm/storm"
+	"git.liquidweb.com/masre/terraform-provider-storm/storm"
 	"github.com/hashicorp/terraform/plugin"
 	"github.com/hashicorp/terraform/terraform"
 )
