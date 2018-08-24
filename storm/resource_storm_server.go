@@ -58,10 +58,10 @@ var stormServerStates = []string{
 
 func resourceServer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceServerCreate,
-		Read:   resourceStormServerRead,
-		Update: resourceStormServerUpdate,
-		Delete: resourceStormServerDelete,
+		Create: resourceCreateServer,
+		Read:   resourceReadStormServer,
+		Update: resourceUpdateStormServer,
+		Delete: resourceDeleteStormServer,
 
 		Schema: map[string]*schema.Schema{
 			"accnt": &schema.Schema{
@@ -161,18 +161,20 @@ func resourceServer() *schema.Resource {
 	}
 }
 
-func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
-	opts := buildStormServerOpts(d, m)
+func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
+	opts := buildCreateStormServerOpts(d, m)
 	config := m.(*Config)
-	_, err := config.Client.Call("v1/Storm/Server/create", opts)
+	rawr, err := config.Client.Call("v1/Storm/Server/create", opts)
 	if err != nil {
 		return err
 	}
+	resp := rawr.(map[string]interface{})
+	uid := resp["uniq_id"].(string)
 
 	stateChange := &resource.StateChangeConf{
 		Delay:      10 * time.Second,
 		Pending:    stormServerStates,
-		Refresh:    refreshStormServer(config, d.Id()),
+		Refresh:    refreshStormServer(config, uid),
 		Target:     []string{"Running"},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		MinTimeout: 5 * time.Second,
@@ -185,7 +187,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceStormServerRead(d *schema.ResourceData, m interface{}) error {
+func resourceReadStormServer(d *schema.ResourceData, m interface{}) error {
 	uid := d.Id()
 	config := m.(*Config)
 	server, err := stormServerDetails(config, uid)
@@ -203,10 +205,8 @@ func resourceStormServerRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceStormServerUpdate(d *schema.ResourceData, m interface{}) error {
-	opts := buildStormServerOpts(d, m)
-	uid := d.Id()
-	opts["uniq_id"] = uid
+func resourceUpdateStormServer(d *schema.ResourceData, m interface{}) error {
+	opts := buildUpdateStormServerOpts(d, m)
 	validOpts := pickStormServerUpdateOpts(opts)
 	config := m.(*Config)
 	_, err := config.Client.Call("v1/Storm/Server/update", validOpts)
@@ -230,7 +230,7 @@ func resourceStormServerUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceStormServerDelete(d *schema.ResourceData, m interface{}) error {
+func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
 	uid := d.Id()
 	opts := make(map[string]interface{})
@@ -258,16 +258,22 @@ func resourceStormServerDelete(d *schema.ResourceData, m interface{}) error {
 
 // StormServerOpts are options passed to Storm API calls
 type StormServerOpts struct {
-	ConfigID     int
-	Domain       string
-	ImageID      int
-	Password     string
-	PublicSSHKey string
-	Template     string
-	Zone         int
+	BackupEnabled  int
+	BackupPlan     string
+	BackupQuota    int
+	BandwidthQuota int
+	ConfigID       int
+	Domain         string
+	ImageID        int
+	Password       string
+	PublicSSHKey   string
+	Template       string
+	UniqID         string
+	Zone           int
 }
 
-func buildStormServerOpts(d *schema.ResourceData, m interface{}) map[string]interface{} {
+// buildCreateStormServerOpts builds options for a create server API call.
+func buildCreateStormServerOpts(d *schema.ResourceData, m interface{}) map[string]interface{} {
 	so := &StormServerOpts{
 		ConfigID:     d.Get("config_id").(int),
 		Domain:       d.Get("domain").(string),
@@ -278,26 +284,48 @@ func buildStormServerOpts(d *schema.ResourceData, m interface{}) map[string]inte
 		Zone:         d.Get("zone").(int),
 	}
 	// The Storm API client uses a string map for parameters.
-	var smOpts = make(map[string]interface{})
-	smOpts["config_id"] = so.ConfigID
-	smOpts["domain"] = so.Domain
+	var opts = make(map[string]interface{})
+	opts["config_id"] = so.ConfigID
+	opts["domain"] = so.Domain
 
 	// Add Template if provided.
 	if len(so.Template) > 0 {
-		smOpts["template"] = so.Template
+		opts["template"] = so.Template
 	}
 
 	// Add Image if provided.
 	if so.ImageID != 0 {
-		smOpts["image_id"] = so.ImageID
+		opts["image_id"] = so.ImageID
 	}
 
-	smOpts["password"] = so.Password
-	smOpts["public_ssh_key"] = so.PublicSSHKey
-	smOpts["template"] = so.Template
-	smOpts["zone"] = so.Zone
+	opts["password"] = so.Password
+	opts["public_ssh_key"] = so.PublicSSHKey
+	opts["template"] = so.Template
+	opts["zone"] = so.Zone
 
-	return smOpts
+	return opts
+}
+
+// buildUpdateStormServerOpts builds options for an update server API call.
+func buildUpdateStormServerOpts(d *schema.ResourceData, m interface{}) map[string]interface{} {
+	so := &StormServerOpts{
+		BackupEnabled:  d.Get("backup_enabled").(int),
+		BackupPlan:     d.Get("backup_plan").(string),
+		BackupQuota:    d.Get("backup_quota").(int),
+		BandwidthQuota: d.Get("bandwidth_quota").(int),
+		Domain:         d.Get("domain").(string),
+		UniqID:         d.Id(),
+	}
+	// The Storm API client uses a string map for parameters.
+	var opts = make(map[string]interface{})
+	opts["backup_enabled"] = so.BackupEnabled
+	opts["backup_plan"] = so.BackupPlan
+	opts["backup_quota"] = so.BackupQuota
+	opts["bandwidth_quota"] = so.BandwidthQuota
+	opts["domain"] = so.Domain
+	opts["uniq_id"] = so.UniqID
+
+	return opts
 }
 
 // pickUpdateOpts returns a set of options valid for an update request.
