@@ -1,21 +1,105 @@
 package storm
 
 import (
+	"fmt"
+	"time"
+
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	lwapi "github.com/liquidweb/go-lwApi"
 )
 
+var stormServerFields = []string{
+	"accnt",
+	"active",
+	"backup_enabled",
+	"backup_plan",
+	"backup_quota",
+	"backup_size",
+	"bandwidth_quota",
+	"config_description",
+	"config_id",
+	"create_date",
+	"diskspace",
+	"domain",
+	"ip",
+	"ip_count",
+	"manage_level",
+	"memory",
+	"template",
+	"template_description",
+	"type",
+	"uniq_id",
+	"vcpu",
+	"zone",
+}
+
+var stormServerStates = []string{
+	"Building",
+	"Cloning",
+	"Resizing",
+	"Moving",
+	"Booting",
+	"Stopping",
+	"Restarting",
+	"Rebooting",
+	"Shutting Down",
+	"Restoring Backup",
+	"Creating Image",
+	"Deleting Image",
+	"Restoring Image",
+	"Re-Imaging",
+	"Updating Firewall",
+	"Updating Network",
+	"Adding IPs",
+	"Removing IP",
+	"Destroying",
+}
+
 func resourceServer() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceServerCreate,
-		Read:   resourceServerRead,
-		Update: resourceServerUpdate,
-		Delete: resourceServerDelete,
+		Read:   resourceStormServerRead,
+		Update: resourceStormServerUpdate,
+		Delete: resourceStormServerDelete,
 
 		Schema: map[string]*schema.Schema{
+			"accnt": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"active": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"backup_enabled": &schema.Schema{
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"backup_plan": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"backup_quota": &schema.Schema{
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"backup_size": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"bandwidth_quota": &schema.Schema{
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"config_description": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"config_id": &schema.Schema{
 				Type:     schema.TypeInt,
 				Required: true,
+				ForceNew: true,
 			},
 			"domain": &schema.Schema{
 				Type:     schema.TypeString,
@@ -24,6 +108,20 @@ func resourceServer() *schema.Resource {
 			"image_id": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
+			},
+			"ip_count": &schema.Schema{
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"manage_level": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+				ForceNew: true,
+			},
+			"memory": &schema.Schema{
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 			"password": &schema.Schema{
 				Type:     schema.TypeString,
@@ -36,35 +134,61 @@ func resourceServer() *schema.Resource {
 			"template": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
+			},
+			"template_description": &schema.Schema{
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"type": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"uniq_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"vcpu": &schema.Schema{
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 			"zone": &schema.Schema{
 				Type:     schema.TypeInt,
 				Required: true,
+				ForceNew: true,
 			},
 		},
 	}
 }
 
 func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
-	opts := buildServerOpts(d, m)
+	opts := buildStormServerOpts(d, m)
 	config := m.(*Config)
-	rawr, err := config.Client.Call("v1/Storm/Server/create", opts)
+	_, err := config.Client.Call("v1/Storm/Server/create", opts)
 	if err != nil {
 		return err
 	}
-	r := rawr.(map[string]interface{})
-	uid := r["uniq_id"].(string)
-	d.SetId(uid)
+
+	stateChange := &resource.StateChangeConf{
+		Delay:      10 * time.Second,
+		Pending:    stormServerStates,
+		Refresh:    refreshStormServer(config, d.Id()),
+		Target:     []string{"Running"},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		MinTimeout: 5 * time.Second,
+	}
+	_, err = stateChange.WaitForState()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func resourceServerRead(d *schema.ResourceData, m interface{}) error {
-	opts := buildServerOpts(d, m)
+func resourceStormServerRead(d *schema.ResourceData, m interface{}) error {
 	uid := d.Id()
-	opts["uniq_id"] = uid
-	validOpts := pickDetailsOpts(opts)
 	config := m.(*Config)
-	_, err := config.Client.Call("v1/Storm/Server/details", validOpts)
+	server, err := stormServerDetails(config, uid)
 	if err != nil {
 		errClass, ok := err.(lwapi.LWAPIError)
 		if ok && errClass.ErrorClass == "LW::Exception::RecordNotFound" {
@@ -74,16 +198,31 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	updateStormServerResource(d, server)
+
 	return nil
 }
 
-func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
-	opts := buildServerOpts(d, m)
+func resourceStormServerUpdate(d *schema.ResourceData, m interface{}) error {
+	opts := buildStormServerOpts(d, m)
 	uid := d.Id()
 	opts["uniq_id"] = uid
-	validOpts := pickUpdateOpts(opts)
+	validOpts := pickStormServerUpdateOpts(opts)
 	config := m.(*Config)
 	_, err := config.Client.Call("v1/Storm/Server/update", validOpts)
+	if err != nil {
+		return err
+	}
+
+	stateChange := &resource.StateChangeConf{
+		Delay:      10 * time.Second,
+		Pending:    stormServerStates,
+		Refresh:    refreshStormServer(config, d.Id()),
+		Target:     []string{"Running"},
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		MinTimeout: 5 * time.Second,
+	}
+	_, err = stateChange.WaitForState()
 	if err != nil {
 		return err
 	}
@@ -91,7 +230,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
+func resourceStormServerDelete(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
 	uid := d.Id()
 	opts := make(map[string]interface{})
@@ -100,11 +239,25 @@ func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	stateChange := &resource.StateChangeConf{
+		Delay:      10 * time.Second,
+		Pending:    stormServerStates,
+		Refresh:    refreshStormServer(config, d.Id()),
+		Target:     []string{"Running"},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		MinTimeout: 5 * time.Second,
+	}
+	_, err = stateChange.WaitForState()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// ServerOpts are options passed to Storm API calls
-type ServerOpts struct {
+// StormServerOpts are options passed to Storm API calls
+type StormServerOpts struct {
 	ConfigID     int
 	Domain       string
 	ImageID      int
@@ -114,8 +267,8 @@ type ServerOpts struct {
 	Zone         int
 }
 
-func buildServerOpts(d *schema.ResourceData, m interface{}) map[string]interface{} {
-	so := &ServerOpts{
+func buildStormServerOpts(d *schema.ResourceData, m interface{}) map[string]interface{} {
+	so := &StormServerOpts{
 		ConfigID:     d.Get("config_id").(int),
 		Domain:       d.Get("domain").(string),
 		ImageID:      d.Get("image_id").(int),
@@ -148,7 +301,7 @@ func buildServerOpts(d *schema.ResourceData, m interface{}) map[string]interface
 }
 
 // pickUpdateOpts returns a set of options valid for an update request.
-func pickUpdateOpts(opts map[string]interface{}) map[string]interface{} {
+func pickStormServerUpdateOpts(opts map[string]interface{}) map[string]interface{} {
 	allowed := [6]string{"backup_enabled", "backup_plan", "backup_quota", "bandwidth_quota", "domain", "uniq_id"}
 	validOpts := make(map[string]interface{})
 
@@ -163,7 +316,7 @@ func pickUpdateOpts(opts map[string]interface{}) map[string]interface{} {
 }
 
 // pickDetailsOpts returns a set of options valid for a details request.
-func pickDetailsOpts(opts map[string]interface{}) map[string]interface{} {
+func pickStormServerDetailsOpts(opts map[string]interface{}) map[string]interface{} {
 	allowed := [6]string{"uniq_id"}
 	validOpts := make(map[string]interface{})
 
@@ -175,4 +328,57 @@ func pickDetailsOpts(opts map[string]interface{}) map[string]interface{} {
 	}
 
 	return validOpts
+}
+
+// refreshStormServer queries the API for status returns the current status.
+// If the status is "Running" query for its details and return them.
+func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		opts := make(map[string]interface{})
+		opts["uniq_id"] = uid
+		rawr, err := config.Client.Call("v1/Storm/Server/status", opts)
+		if err != nil {
+			return nil, "", err
+		}
+		resp := rawr.(map[string]interface{})
+		status, ok := resp["status"]
+		if !ok {
+			return nil, "", fmt.Errorf("problem getting server status")
+		}
+		state := status.(string)
+
+		// Get server details if it's running.
+		if state == "Running" {
+			rawr, err := stormServerDetails(config, uid)
+			if err != nil {
+				return nil, "", err
+			}
+
+			return rawr, state, nil
+		}
+
+		return nil, state, nil
+	}
+}
+
+// serverDetails gets server details from the API.
+func stormServerDetails(config *Config, uid string) (interface{}, error) {
+	opts := make(map[string]interface{})
+	opts["uniq_id"] = uid
+	return config.Client.Call("v1/Storm/Server/details", opts)
+}
+
+// updateStormServerResource updates the resource data for the storm server.
+func updateStormServerResource(d *schema.ResourceData, server interface{}) {
+	ss := server.(map[string]interface{})
+
+	fields := stormServerFields
+
+	for _, field := range fields {
+		f, ok := ss[field]
+		if ok {
+			d.Set(field, f)
+		}
+	}
+
 }
