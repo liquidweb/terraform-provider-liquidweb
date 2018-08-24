@@ -2,6 +2,8 @@
 
 ## Developing
 
+Dependencies:
+
 - Install Terraform
 - Install Go
 - Install [dep](https://golang.github.io/dep)
@@ -9,12 +11,14 @@
 
 ```
 [lwApi]
-username = "tf_dev"
-password = "Sji2zy4Aubs5hDNb"
+username = "[yourusername]"
+password = "[yourpassword]"
 url = "https://api.stormondemand.com"
 timeout = 15
 ```
 
-- `make key` -- for testing creation of storm instances.
-- `make dep` -- install dependencies.
+There is a Terraform definition provided as an example, `main.tf`, which illustrates how to create various resources. It can also be used to actually test resource creation as well.
+
+- `make key` -- create a new SSH key to provision Storm Servers with.
+- `make dep` -- install Golang dependencies.
 - `make devrun` -- build, init and apply cycle.
