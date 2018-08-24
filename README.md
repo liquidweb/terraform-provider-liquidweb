@@ -4,8 +4,8 @@
 
 Dependencies:
 
-- Install Terraform
-- Install Go
+- Install [Terraform](https://www.terraform.io)
+- Install [Go](https://www.golang.org)
 - Install [dep](https://golang.github.io/dep)
 - Create a `.lwapi.toml` file:
 
