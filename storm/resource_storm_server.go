@@ -65,11 +65,11 @@ func resourceServer() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"accnt": &schema.Schema{
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"active": &schema.Schema{
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"backup_enabled": &schema.Schema{
@@ -170,6 +170,7 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 	}
 	resp := rawr.(map[string]interface{})
 	uid := resp["uniq_id"].(string)
+	d.SetId(uid)
 
 	stateChange := &resource.StateChangeConf{
 		Delay:          10 * time.Second,
@@ -322,8 +323,12 @@ func buildUpdateStormServerOpts(d *schema.ResourceData, m interface{}) map[strin
 	// The Storm API client uses a string map for parameters.
 	var opts = make(map[string]interface{})
 	opts["backup_enabled"] = so.BackupEnabled
-	opts["backup_plan"] = so.BackupPlan
-	opts["backup_quota"] = so.BackupQuota
+	if len(so.BackupPlan) > 0 {
+		opts["backup_plan"] = so.BackupPlan
+	}
+	if so.BackupQuota > 0 {
+		opts["backup_quota"] = so.BackupQuota
+	}
 	opts["bandwidth_quota"] = so.BandwidthQuota
 	opts["domain"] = so.Domain
 	opts["uniq_id"] = so.UniqID
@@ -410,6 +415,8 @@ func updateStormServerResource(d *schema.ResourceData, server interface{}) {
 		if ok {
 			d.Set(field, f)
 		}
+		if field == "uniq_id" {
+			d.SetId(f.(string))
+		}
 	}
-
 }
