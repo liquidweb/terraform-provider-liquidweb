@@ -10,23 +10,19 @@ provider "storm" {
   config_path = "${var.liquidweb_config_path}"
 }
 
-//data "liquidweb_network_zone" "api" {
-//  active    = true
-//  available = true
-//  vcpu      = 1
-//  memory    = "2G"
-//  disk      = "100G"
-//  zone      = 12
-//}
-//
-//data "liquidweb_storm_server_config" "api" {
-//  active    = true
-//  available = true
-//  vcpu      = 1
-//  memory    = "2G"
-//  disk      = "100G"
-//  zone      = "${data.storm_network_zone.api_zone.id}"
-//}
+data "liquidweb_network_zone" "api" {
+  status = "Open"
+  region = "US West"
+}
+
+data "liquidweb_storm_server_config" "api" {
+  active    = true
+  available = true
+  vcpu      = 1
+  memory    = "2G"
+  disk      = "100G"
+  zone      = "${data.storm_network_zone.api_zone.id}"
+}
 
 resource "liquidweb_storm_server" "api_servers" {
   count          = 2

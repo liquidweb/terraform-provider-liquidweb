@@ -40,7 +40,6 @@ func dataSourceLWStormConfig() *schema.Resource {
 
 // dataSourceLWStormConfigRead gets the available storm configs.
 func dataSourceLWStormConfigRead(d *schema.ResourceData, meta interface{}) error {
-	//config := meta.(*Config).Client
-
-	return nil
+	config := meta.(*Config)
+	config.Client.Call("v1/Storm/Config/list", opts)
 }
