@@ -1,4 +1,4 @@
-package storm
+package lw
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"

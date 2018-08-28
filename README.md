@@ -1,4 +1,4 @@
-# Storm Terraform Provider
+# Liquid Web Terraform Provider
 
 ## Developing
 

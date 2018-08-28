@@ -1,4 +1,4 @@
-storm_config_path=${PWD}/.lwapi.toml
+liquidweb_config_path=${PWD}/.lwapi.toml
 
 build:
 	go build
@@ -13,13 +13,13 @@ init:
 	terraform init
 
 plan:
-	terraform plan -var storm_config_path=${storm_config_path}
+	terraform plan -var liquidweb_config_path=${storm_config_path}
 
 apply:
-	terraform apply -auto-approve -var storm_config_path=${storm_config_path}
+	terraform apply -auto-approve -var liquidweb_config_path=${storm_config_path}
 
 destroy:
-	terraform destroy -auto-approve -var storm_config_path=${storm_config_path}
+	terraform destroy -auto-approve -var liquidweb_config_path=${storm_config_path}
 
 devrun: build init apply
 
