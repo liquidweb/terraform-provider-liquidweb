@@ -1,4 +1,4 @@
-package lw
+package liquidweb
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
@@ -14,8 +14,11 @@ func Provider() *schema.Provider {
 				Description: "Path to the LiquidWeb API configuration file.",
 			},
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"liquidweb_network_zone": dataSourceLWNetworkZone(),
+		},
 		ResourcesMap: map[string]*schema.Resource{
-			"storm_server": resourceServer(),
+			"liquidweb_storm_server": resourceStormServer(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

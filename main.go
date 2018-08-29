@@ -1,7 +1,7 @@
 package main
 
 import (
-	"git.liquidweb.com/masre/terraform-provider-liquidweb/lw"
+	"git.liquidweb.com/masre/terraform-provider-liquidweb/liquidweb"
 	"github.com/hashicorp/terraform/plugin"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -9,7 +9,7 @@ import (
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
 		ProviderFunc: func() terraform.ResourceProvider {
-			return lw.Provider()
+			return liquidweb.Provider()
 		},
 	})
 }

@@ -3,11 +3,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:72dd0fa11732f9541eed79477cffad8ae4d8d4a20208af953c246800f3581f53"
+  digest = "1:841a65ff6d8370d2b34f12bc73e28a542c87571bef57554820f8900ca599df60"
   name = "git.liquidweb.com/masre/liquidweb-go"
-  packages = ["client"]
+  packages = [
+    ".",
+    "api",
+    "client",
+    "networkzone",
+    "storm",
+    "storm/server",
+    "types",
+  ]
   pruneopts = "UT"
-  revision = "1145336b56b5d18f5ca4a0083c2afbd80205f181"
+  revision = "3cc66585ba4197db5e228326abe52bef9d9ce1c1"
 
 [[projects]]
   digest = "1:dc2ba13235a4c8f80a40599575a3f10acb4736cb372f1a68b88333c06564471d"
@@ -619,7 +627,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "git.liquidweb.com/masre/liquidweb-go/client",
+    "git.liquidweb.com/masre/liquidweb-go/api",
     "github.com/hashicorp/terraform/helper/resource",
     "github.com/hashicorp/terraform/helper/schema",
     "github.com/hashicorp/terraform/plugin",

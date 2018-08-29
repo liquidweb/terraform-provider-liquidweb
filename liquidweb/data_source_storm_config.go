@@ -1,4 +1,4 @@
-package lw
+package liquidweb
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"

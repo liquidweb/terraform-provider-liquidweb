@@ -1,4 +1,4 @@
-package lw
+package liquidweb
 
 import (
 	"fmt"
@@ -56,7 +56,7 @@ var stormServerStates = []string{
 	"Destroying",
 }
 
-func resourceServer() *schema.Resource {
+func resourceStormServer() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceCreateServer,
 		Read:   resourceReadStormServer,

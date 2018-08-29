@@ -6,14 +6,14 @@ variable "api_server_password" {
   type = "string"
 }
 
-provider "storm" {
+provider "liquidweb" {
   config_path = "${var.liquidweb_config_path}"
 }
 
-#data "liquidweb_network_zone" "api" {
-#  status = "Open"
-#  region = "US West"
-#}
+data "liquidweb_network_zone" "api" {
+  region_name = "US West"
+}
+
 #
 #data "liquidweb_storm_server_config" "api" {
 #  active    = true
@@ -82,3 +82,6 @@ resource "liquidweb_storm_server" "api_servers" {
 //}
 //
 
+output "api_network_zone" {
+  value = "${data.liquidweb_network_zone.api.name}"
+}

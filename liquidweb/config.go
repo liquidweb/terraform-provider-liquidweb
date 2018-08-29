@@ -1,7 +1,7 @@
-package lw
+package liquidweb
 
 import (
-	lwgo "git.liquidweb.com/masre/liquidweb-go/client"
+	lwgoapi "git.liquidweb.com/masre/liquidweb-go/api"
 	lwapi "github.com/liquidweb/go-lwApi"
 	"github.com/spf13/viper"
 )
@@ -9,7 +9,7 @@ import (
 // Config holds all of the metadata for the provider and the Storm API client.
 type Config struct {
 	Client   *lwapi.Client
-	NClient  *lwgo.Client
+	LWAPI    *lwgoapi.API
 	username string
 	password string
 	URL      string
@@ -17,14 +17,14 @@ type Config struct {
 }
 
 // NewConfig accepts configuration parameters and returns a Config.
-func NewConfig(username string, password string, url string, timeout int, client *lwapi.Client, nClient *lwgo.Client) (*Config, error) {
+func NewConfig(username string, password string, url string, timeout int, client *lwapi.Client, nClient *lwgoapi.API) (*Config, error) {
 	c := &Config{
 		username: username,
 		password: password,
 		URL:      url,
 		Timeout:  timeout,
 		Client:   client,
-		NClient:  nClient,
+		LWAPI:    nClient,
 	}
 
 	return c, nil
@@ -41,10 +41,10 @@ func GetConfig(path string) (interface{}, error) {
 		return nil, verr
 	}
 
-	username := vc.GetString("username")
-	password := vc.GetString("password")
-	url := vc.GetString("url")
-	timeout := vc.GetInt("Timeout")
+	username := vc.GetString("lwapi.username")
+	password := vc.GetString("lwapi.password")
+	url := vc.GetString("lwapi.url")
+	timeout := vc.GetInt("lwapi.Timeout")
 
 	// Initialize original LW go client.
 	client, err := lwapi.New(vc)
@@ -53,11 +53,10 @@ func GetConfig(path string) (interface{}, error) {
 	}
 
 	// Initial new LW go client.
-	nConfig, err := lwgo.NewConfig(username, password, url, timeout, true)
+	lwAPI, err := lwgoapi.NewAPI(username, password, url, timeout)
 	if err != nil {
 		return nil, err
 	}
-	nClient := lwgo.NewClient(nConfig)
 
 	return NewConfig(
 		username,
@@ -65,6 +64,6 @@ func GetConfig(path string) (interface{}, error) {
 		url,
 		timeout,
 		client,
-		nClient,
+		lwAPI,
 	)
 }
