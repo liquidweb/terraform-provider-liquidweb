@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:841a65ff6d8370d2b34f12bc73e28a542c87571bef57554820f8900ca599df60"
+  digest = "1:07ee9ed5772c47f4cb30ed51aea4277f400220e38dd68b9694017ee2f675e736"
   name = "git.liquidweb.com/masre/liquidweb-go"
   packages = [
     ".",
@@ -11,11 +11,12 @@
     "client",
     "networkzone",
     "storm",
+    "storm/config",
     "storm/server",
     "types",
   ]
   pruneopts = "UT"
-  revision = "3cc66585ba4197db5e228326abe52bef9d9ce1c1"
+  revision = "9089b05fdbeccbea1e7c7277292ce1958dcbce2c"
 
 [[projects]]
   digest = "1:dc2ba13235a4c8f80a40599575a3f10acb4736cb372f1a68b88333c06564471d"
