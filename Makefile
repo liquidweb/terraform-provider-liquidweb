@@ -1,7 +1,10 @@
 liquidweb_config_path=${PWD}/.lwapi.toml
 
-build:
+build: clean
 	go build
+
+clean:
+	rm -f terraform-provider-liquidweb
 
 ensure:
 	dep ensure

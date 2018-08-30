@@ -11,31 +11,25 @@ provider "liquidweb" {
 }
 
 data "liquidweb_network_zone" "api" {
-  region_name = "US West"
+  name        = "Zone C"
+  region_name = "US Central"
 }
 
-#
-#data "liquidweb_storm_server_config" "api" {
-#  active    = true
-#  available = true
-#  vcpu      = 1
-#  memory    = "2G"
-#  disk      = "100G"
-#  zone      = "${data.storm_network_zone.api_zone.id}"
-#}
+data "liquidweb_storm_server_config" "api" {
+  vcpu         = 2
+  memory       = "2000"
+  disk         = "100"
+  network_zone = "${data.liquidweb_network_zone.api.id}"
+}
 
 resource "liquidweb_storm_server" "api_servers" {
-  count = 2
-
-  //config_id      = "${data.liquidweb_storm_config.api.id}"
-  config_id      = 1090
-  template       = "UBUNTU_1804_UNMANAGED"                // ubuntu 18.04
+  count          = 2
+  config_id      = "${data.liquidweb_storm_server_config.api.id}"
+  zone           = "${data.liquidweb_network_zone.api.id}"
+  template       = "UBUNTU_1804_UNMANAGED"                        // ubuntu 18.04
   domain         = "api.${count.index + 1}.mwx.masre.net"
   password       = "${var.api_server_password}"
   public_ssh_key = "${file("./devkey.pub")}"
-
-  //zone           = "${data.liquidweb_network_zone.api.id}"
-  zone = 12
 }
 
 //

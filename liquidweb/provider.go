@@ -15,7 +15,8 @@ func Provider() *schema.Provider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"liquidweb_network_zone": dataSourceLWNetworkZone(),
+			"liquidweb_network_zone":        dataSourceLWNetworkZone(),
+			"liquidweb_storm_server_config": dataSourceLWStormServerConfig(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"liquidweb_storm_server": resourceStormServer(),

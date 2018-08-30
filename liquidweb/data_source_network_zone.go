@@ -2,6 +2,8 @@ package liquidweb
 
 import (
 	"fmt"
+	"log"
+	"strconv"
 
 	lwapi "git.liquidweb.com/masre/liquidweb-go"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -12,13 +14,13 @@ func dataSourceLWNetworkZone() *schema.Resource {
 		Read: dataSourceLWNetworkZoneRead,
 
 		Schema: map[string]*schema.Schema{
+			"network_zone_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"region_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-			},
-			"id": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
 			},
 			"is_default": {
 				Type:     schema.TypeBool,
@@ -26,7 +28,7 @@ func dataSourceLWNetworkZone() *schema.Resource {
 			},
 			"name": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			"region": {
 				Type:     schema.TypeMap,
@@ -68,17 +70,14 @@ func dataSourceLWNetworkZone() *schema.Resource {
 	}
 }
 
-// dataSourceLWNetworkZoneRead gets the available storm configs.
+// dataSourceLWNetworkZoneRead gets the available network zones.
 func dataSourceLWNetworkZoneRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 	params := &lwapi.ZoneListParams{}
 
-	regionName, ok := d.GetOk("region_name")
+	_, ok := d.GetOk("region_name")
 	if ok {
-		name, rOk := regionName.(string)
-		if rOk {
-			params.Region = name
-		}
+		params.Region = d.Get("region_name").(string)
 	}
 
 	result, err := config.LWAPI.NetworkZone.List(params)
@@ -90,17 +89,43 @@ func dataSourceLWNetworkZoneRead(d *schema.ResourceData, meta interface{}) error
 		return result
 	}
 
-	if result.ItemCount != 1 {
-		return fmt.Errorf("Search returned %d results, please revise so only one is returned", result.ItemCount)
+	filteredNetworkZones := filterLWNetworkZones(result, d)
+
+	if len(filteredNetworkZones) != 1 {
+		return fmt.Errorf("Search returned %d results, please revise so only one is returned", len(filteredNetworkZones))
 	}
 
-	item := result.Items[0]
-	d.SetId(string(item.ID))
+	item := filteredNetworkZones[0]
+	id := strconv.Itoa(int(item.ID))
+	d.SetId(id)
+	d.Set("network_zone_id", id)
 	d.Set("is_default", item.IsDefault)
 	d.Set("name", item.Name)
 	d.Set("region", item.Region)
 	d.Set("status", item.Status)
 	d.Set("valid_source_hvs", item.ValidSourceHVS)
+	d.Set("region_name", item.Region.Name)
 
 	return nil
+}
+
+func filterLWNetworkZones(zoneList *lwapi.ZoneList, d *schema.ResourceData) []lwapi.Zone {
+	_, nameOk := d.GetOk("name")
+	var name string
+	if nameOk {
+		name = d.Get("name").(string)
+	}
+
+	filteredNetworkZones := []lwapi.Zone{}
+
+	for _, z := range zoneList.Items {
+		log.Printf("blars %+v", z.Name)
+		if nameOk && name != z.Name {
+			continue
+		}
+
+		filteredNetworkZones = append(filteredNetworkZones, z)
+	}
+
+	return filteredNetworkZones
 }

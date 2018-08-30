@@ -627,7 +627,9 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "git.liquidweb.com/masre/liquidweb-go",
     "git.liquidweb.com/masre/liquidweb-go/api",
+    "git.liquidweb.com/masre/liquidweb-go/storm",
     "github.com/hashicorp/terraform/helper/resource",
     "github.com/hashicorp/terraform/helper/schema",
     "github.com/hashicorp/terraform/plugin",
