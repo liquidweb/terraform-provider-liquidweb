@@ -18,7 +18,12 @@ func dataSourceLWStormServerConfig() *schema.Resource {
 			"network_zone": &schema.Schema{
 				Type:     schema.TypeString,
 				ForceNew: true,
-				Required: true,
+				Optional: true,
+			},
+			"config_id": &schema.Schema{
+				Type:     schema.TypeInt,
+				ForceNew: true,
+				Optional: true,
 			},
 			// Attributes
 			"active": {
@@ -151,6 +156,12 @@ func filterLWStormConfigs(configList *storm.ConfigList, d *schema.ResourceData) 
 		networkZone = d.Get("network_zone").(string)
 	}
 
+	_, configIDOk := d.GetOk("config_id")
+	var configID int
+	if configIDOk {
+		configID = d.Get("config_id").(int)
+	}
+
 	filteredConfigs := []storm.Config{}
 
 	for _, c := range configList.Items {
@@ -191,6 +202,10 @@ func filterLWStormConfigs(configList *storm.ConfigList, d *schema.ResourceData) 
 			if !c.ZoneAvailability[networkZone] {
 				continue
 			}
+		}
+
+		if configIDOk && int(c.ID) != configID {
+			continue
 		}
 
 		filteredConfigs = append(filteredConfigs, c)
