@@ -90,12 +90,14 @@ func dataSourceLWStormServerConfigRead(d *schema.ResourceData, meta interface{})
 
 	// Filter list based on various criteria.
 	filteredConfigs := filterLWStormConfigs(result, d)
+	log.Printf("blars: %+v", filteredConfigs)
 	if len(filteredConfigs) != 1 {
 		return fmt.Errorf("Search returned %d results, please revise so only one is returned", len(filteredConfigs))
 	}
 
 	item := filteredConfigs[0]
-	d.SetId(string(item.ID))
+
+	d.SetId(item.ID.String())
 	d.Set("active", item.Active)
 	d.Set("available", item.Available)
 	d.Set("category", item.Category)
@@ -173,15 +175,15 @@ func filterLWStormConfigs(configList *storm.ConfigList, d *schema.ResourceData) 
 		}
 
 		// Check minimums on various resources.
-		if memoryOk && int(c.Memory) < memory {
+		if memoryOk && int(c.Memory) != memory {
 			continue
 		}
 
-		if diskOk && int(c.Disk) < disk {
+		if diskOk && int(c.Disk) != disk {
 			continue
 		}
 
-		if vcpuOk && int(c.VCPU) < vcpu {
+		if vcpuOk && int(c.VCPU) != vcpu {
 			continue
 		}
 

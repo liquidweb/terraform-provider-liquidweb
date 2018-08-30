@@ -2,8 +2,6 @@ package liquidweb
 
 import (
 	"fmt"
-	"log"
-	"strconv"
 
 	lwapi "git.liquidweb.com/masre/liquidweb-go"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -96,9 +94,8 @@ func dataSourceLWNetworkZoneRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	item := filteredNetworkZones[0]
-	id := strconv.Itoa(int(item.ID))
-	d.SetId(id)
-	d.Set("network_zone_id", id)
+	d.SetId(item.ID.String())
+	d.Set("network_zone_id", item.ID.String())
 	d.Set("is_default", item.IsDefault)
 	d.Set("name", item.Name)
 	d.Set("region", item.Region)
@@ -119,7 +116,6 @@ func filterLWNetworkZones(zoneList *lwapi.ZoneList, d *schema.ResourceData) []lw
 	filteredNetworkZones := []lwapi.Zone{}
 
 	for _, z := range zoneList.Items {
-		log.Printf("blars %+v", z.Name)
 		if nameOk && name != z.Name {
 			continue
 		}
