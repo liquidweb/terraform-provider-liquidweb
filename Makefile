@@ -30,3 +30,9 @@ devapply: build init apply
 
 key:
 	ssh-keygen -N '' -C devkey -f devkey
+
+image:
+	docker build -f terraform.Dockerfile -t git.liquidweb.com:4567/masre/terraform-provider-liquidweb .
+
+push_image:
+	docker push git.liquidweb.com:4567/masre/terraform-provider-liquidweb

@@ -1,8 +1,8 @@
 devkey
 devkey.pub
-terraform.*
+terraform.tfvars
 *.log
-.terraform
+.terraform/
 vendor/
 .lwapi.toml
 terraform-provider-liquidweb
