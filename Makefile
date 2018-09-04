@@ -16,7 +16,7 @@ init:
 	terraform init
 
 plan:
-	TF_LOG=trace terraform plan -var liquidweb_config_path=${liquidweb_config_path}
+	terraform plan -var liquidweb_config_path=${liquidweb_config_path}
 
 apply:
 	terraform apply -auto-approve -var liquidweb_config_path=${liquidweb_config_path}
