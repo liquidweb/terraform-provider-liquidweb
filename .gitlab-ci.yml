@@ -1,0 +1,11 @@
+stages:
+  - build
+
+build-image:
+  tags:
+    - docker
+  stage: build
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -f terraform.Dockerfile -t git.liquidweb.com:4567/masre/terraform-provider-liquidweb .
+    - docker push git.liquidweb.com:4567/masre/terraform-provider-liquidweb
