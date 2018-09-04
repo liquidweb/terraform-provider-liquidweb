@@ -3,7 +3,7 @@ stages:
 
 build-image:
   tags:
-    - docker
+    - docker-with-registry
   stage: build
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
