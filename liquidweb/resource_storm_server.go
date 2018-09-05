@@ -97,7 +97,7 @@ func resourceStormServer() *schema.Resource {
 				Computed: true,
 			},
 			"config_id": &schema.Schema{
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Required: true,
 				ForceNew: true,
 			},
@@ -153,7 +153,7 @@ func resourceStormServer() *schema.Resource {
 				Computed: true,
 			},
 			"zone": &schema.Schema{
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Required: true,
 				ForceNew: true,
 			},
