@@ -23,13 +23,13 @@ data "liquidweb_storm_server_config" "api" {
 }
 
 resource "liquidweb_storm_server" "api_servers" {
-  count = 2
+  count = 1
 
   //config_id      = "${data.liquidweb_storm_server_config.api.id}"
   config_id      = 1090
   zone           = "${data.liquidweb_network_zone.api.id}"
-  template       = "UBUNTU_1804_UNMANAGED"                 // ubuntu 18.04
-  domain         = "api.${count.index + 1}.mwx.masre.net"
+  template       = "UBUNTU_1804_UNMANAGED"                     // ubuntu 18.04
+  domain         = "api.dev5.${count.index + 1}.mwx.masre.net"
   password       = "${var.api_server_password}"
   public_ssh_key = "${file("./devkey.pub")}"
 }

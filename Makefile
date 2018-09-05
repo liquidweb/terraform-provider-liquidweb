@@ -22,7 +22,7 @@ apply:
 	terraform apply -auto-approve -var liquidweb_config_path=${liquidweb_config_path}
 
 destroy:
-	terraform destroy -auto-approve -var liquidweb_config_path=${liquidweb_config_path}
+	TF_LOG=trace terraform destroy -auto-approve -var liquidweb_config_path=${liquidweb_config_path}
 
 devplan: build init plan
 

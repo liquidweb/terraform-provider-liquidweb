@@ -2,6 +2,7 @@ package liquidweb
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -253,7 +254,8 @@ func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 	}
 	_, err = stateChange.WaitForState()
 	if err != nil {
-		return err
+		return fmt.Errorf(
+			"Error waiting for instance (%s) to be destroyed: %s", uid, err)
 	}
 
 	return nil
@@ -381,6 +383,7 @@ func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
 			return nil, "", fmt.Errorf("problem getting server status")
 		}
 		state := status.(string)
+		log.Printf("status returned: %v", state)
 
 		// Get server details if it's running.
 		if state == "Running" {
@@ -392,7 +395,9 @@ func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
 			return rawr, state, nil
 		}
 
-		return nil, state, nil
+		// Return an empty string as if nil is returned the resource will be considered "not found".
+		// See https://github.com/hashicorp/terraform/issues/16995
+		return "", state, nil
 	}
 }
 
