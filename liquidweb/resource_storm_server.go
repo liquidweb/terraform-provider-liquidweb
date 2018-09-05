@@ -53,7 +53,6 @@ var stormServerStates = []string{
 	"Updating Network",
 	"Adding IPs",
 	"Removing IP",
-	"Destroying",
 }
 
 func resourceStormServer() *schema.Resource {
@@ -247,7 +246,7 @@ func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 		Delay:          10 * time.Second,
 		Pending:        stormServerStates,
 		Refresh:        refreshStormServer(config, d.Id()),
-		Target:         []string{"Running"},
+		Target:         []string{"Destroying"},
 		Timeout:        20 * time.Minute,
 		NotFoundChecks: 240,
 		MinTimeout:     5 * time.Second,
