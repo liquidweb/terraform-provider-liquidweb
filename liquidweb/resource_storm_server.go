@@ -54,6 +54,8 @@ var stormServerStates = []string{
 	"Updating Network",
 	"Adding IPs",
 	"Removing IP",
+	"Provisioning",
+	"Shutdown",
 }
 
 func resourceStormServer() *schema.Resource {
@@ -396,7 +398,7 @@ func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
 		}
 
 		// Return an empty string as if nil is returned the resource will be considered "not found".
-		// See https://github.com/hashicorp/terraform/issues/16995
+		// See
 		return "", state, nil
 	}
 }
