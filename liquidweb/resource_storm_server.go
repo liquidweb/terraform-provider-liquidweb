@@ -112,6 +112,10 @@ func resourceStormServer() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+			"ip": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"ip_count": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,

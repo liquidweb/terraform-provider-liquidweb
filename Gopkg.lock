@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:07ee9ed5772c47f4cb30ed51aea4277f400220e38dd68b9694017ee2f675e736"
+  digest = "1:476fbd7b7cbffa62759afc7652b77bd5590919f10f9492c16d0dae60c278218d"
   name = "git.liquidweb.com/masre/liquidweb-go"
   packages = [
     ".",
@@ -16,7 +16,7 @@
     "types",
   ]
   pruneopts = "UT"
-  revision = "9089b05fdbeccbea1e7c7277292ce1958dcbce2c"
+  revision = "645296224c03d8eb0dd807fa57c080c72e5a5ede"
 
 [[projects]]
   digest = "1:dc2ba13235a4c8f80a40599575a3f10acb4736cb372f1a68b88333c06564471d"
