@@ -78,6 +78,6 @@ resource "liquidweb_storm_server" "api_servers" {
 //}
 //
 
-output "api_network_zone" {
-  value = "${data.liquidweb_network_zone.api.name}"
+output "api_server_ips" {
+  value = "${join(",", concat(liquidweb_storm_server.api_servers.*.ip))}"
 }
