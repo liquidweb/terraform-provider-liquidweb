@@ -1,7 +1,7 @@
 package liquidweb
 
 import (
-	lwgoapi "git.liquidweb.com/masre/liquidweb-go/api"
+	lwgoapi "git.liquidweb.com/masre/liquidweb-go"
 	lwapi "github.com/liquidweb/go-lwApi"
 	"github.com/spf13/viper"
 )

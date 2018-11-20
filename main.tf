@@ -34,6 +34,15 @@ resource "liquidweb_storm_server" "api_servers" {
   public_ssh_key = "${file("./devkey.pub")}"
 }
 
+resource "liquidweb_dns_record" "api_servers" {
+  count = "${liquidweb_storm_server.api_servers.count}"
+
+  name  = "api-${count.index}"
+  type  = "A"
+  rdata = "${liquidweb_dns_record.api_servers}"
+  zone  = "masre.net"
+}
+
 //
 //resource "liquidweb_storm_server" "database_servers" {
 //  count = 2

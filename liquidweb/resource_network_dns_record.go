@@ -2,9 +2,10 @@ package liquidweb
 
 import (
 	"fmt"
-	"log"
+	"strconv"
 	"time"
 
+	network "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	lwapi "github.com/liquidweb/go-lwApi"
@@ -138,34 +139,19 @@ func resourceNetworkDNSRecord() *schema.Resource {
 func resourceCreateNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
 	opts := buildNetworkDNSRecordOpts(d, m)
 	config := m.(*Config)
-	rawr, err := config.Client.Call("v1/Storm/Server/create", opts)
-	if err != nil {
-		return err
-	}
-	resp := rawr.(map[string]interface{})
-	uid := resp["uniq_id"].(string)
-	d.SetId(uid)
 
-	stateChange := &resource.StateChangeConf{
-		Delay:          10 * time.Second,
-		Pending:        stormServerStates,
-		Refresh:        refreshStormServer(config, uid),
-		Target:         []string{"Running"},
-		Timeout:        20 * time.Minute,
-		NotFoundChecks: 240,
-		MinTimeout:     5 * time.Second,
+	result := config.LWAPI.NetworkDNS.Create(opts)
+	if result.HasError() {
+		return result
 	}
-	// https://godoc.org/github.com/hashicorp/terraform/helper/resource#StateRefreshFunc
-	// we need to figure out why returning the updated instance isn't updating the server state. Added a call to update at the end of the refresh just for good measure for now.
-	_, err = stateChange.WaitForState()
-	if err != nil {
-		return err
-	}
+
+	id := strconv.Itoa(result.ID)
+	d.SetId(id)
 
 	return resourceUpdateStormServer(d, m)
 }
 
-func resourceReadStormServer(d *schema.ResourceData, m interface{}) error {
+func resourceReadNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
 	uid := d.Id()
 	config := m.(*Config)
 	server, err := stormServerDetails(config, uid)
@@ -183,7 +169,7 @@ func resourceReadStormServer(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceUpdateStormServer(d *schema.ResourceData, m interface{}) error {
+func resourceUpdateNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
 	opts := buildUpdateStormServerOpts(d, m)
 	validOpts := pickStormServerUpdateOpts(opts)
 	config := m.(*Config)
@@ -209,7 +195,7 @@ func resourceUpdateStormServer(d *schema.ResourceData, m interface{}) error {
 	return resourceReadStormServer(d, m)
 }
 
-func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
+func resourceDeleteNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
 	uid := d.Id()
 	opts := make(map[string]interface{})
@@ -237,166 +223,31 @@ func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-// NetworkDNSRecordOptsOpts are options passed to API calls
-type NetworkDNSRecordOptsOpts struct {
-	Name   string
-	Prio   int
-	RData  string
-	TTL    int
-	Type   string
-	Zone   string
-	ZoneID int
-}
-
 // buildNetworkDNSRecordOpts builds options for a create/update DNS record API call.
-func buildNetworkDNSRecordOpts(d *schema.ResourceData, m interface{}) map[string]interface{} {
-	so := &NetworkDNSRecordOptsOpts{
-		Name:   d.Get("name").(int),
-		Prio:   d.Get("prio").(string),
-		RData:  d.Get("rdata").(int),
-		TTL:    d.Get("ttl").(string),
-		Type:   d.Get("type").(string),
-		Zone:   d.Get("zone").(string),
-		ZoneID: d.Get("zone_id").(int),
+func buildNetworkDNSRecordOpts(d *schema.ResourceData, m interface{}) *network.DNSRecordParams {
+	params := &network.DNSRecordParams{
+		Name:  d.Get("name").(string),
+		Prio:  d.Get("prio").(int),
+		RData: d.Get("rdata").(string),
+		Type:  d.Get("type").(string),
 	}
 
-	// The API client uses a string map for parameters.
-	var opts = make(map[string]interface{})
-	opts["name"] = so.Name
-	opts["rdata"] = so.RData
-	opts["type"] = so.Type
-
 	// Add Zone ID if provided.
-	if len(so.ZoneID) > 0 {
-		opts["zone_id"] = so.ZoneID
+	zid := d.Get("zone_id").(int)
+	if zid > 0 {
+		params.ZoneID = zid
 	}
 
 	// Add Zone if Zone ID isn't set.
-	if _, ok := opts["zone_id"] > 0; !ok {
-		opts["zone"] = so.Zone
+	zone := d.Get("zone").(string)
+	if zid == 0 {
+		params.Zone = zone
 	}
 
-	if so.Prio >= 0 {
-		opts["prio"] = so.Prio
+	ttl := d.Get("ttl").(int)
+	if ttl > 0 {
+		params.TTL = ttl
 	}
 
-	if so.TTL >= 0 {
-		opts[ttl] = so.TTL
-	}
-
-	return opts
-}
-
-// buildUpdateStormServerOpts builds options for an update server API call.
-func buildUpdateStormServerOpts(d *schema.ResourceData, m interface{}) map[string]interface{} {
-	so := &StormServerOpts{
-		BackupEnabled:  d.Get("backup_enabled").(int),
-		BackupPlan:     d.Get("backup_plan").(string),
-		BackupQuota:    d.Get("backup_quota").(int),
-		BandwidthQuota: d.Get("bandwidth_quota").(int),
-		Domain:         d.Get("domain").(string),
-		UniqID:         d.Id(),
-	}
-	// The Storm API client uses a string map for parameters.
-	var opts = make(map[string]interface{})
-	opts["backup_enabled"] = so.BackupEnabled
-	if len(so.BackupPlan) > 0 {
-		opts["backup_plan"] = so.BackupPlan
-	}
-	if so.BackupQuota > 0 {
-		opts["backup_quota"] = so.BackupQuota
-	}
-	opts["bandwidth_quota"] = so.BandwidthQuota
-	opts["domain"] = so.Domain
-	opts["uniq_id"] = so.UniqID
-
-	return opts
-}
-
-// pickUpdateOpts returns a set of options valid for an update request.
-func pickStormServerUpdateOpts(opts map[string]interface{}) map[string]interface{} {
-	allowed := [6]string{"backup_enabled", "backup_plan", "backup_quota", "bandwidth_quota", "domain", "uniq_id"}
-	validOpts := make(map[string]interface{})
-
-	for _, af := range allowed {
-		f, ok := opts[af]
-		if ok {
-			validOpts[af] = f
-		}
-	}
-
-	return validOpts
-}
-
-// pickDetailsOpts returns a set of options valid for a details request.
-func pickStormServerDetailsOpts(opts map[string]interface{}) map[string]interface{} {
-	allowed := [6]string{"uniq_id"}
-	validOpts := make(map[string]interface{})
-
-	for _, af := range allowed {
-		f, ok := opts[af]
-		if ok {
-			validOpts[af] = f
-		}
-	}
-
-	return validOpts
-}
-
-// refreshStormServer queries the API for status returns the current status.
-// If the status is "Running" query for its details and return them.
-func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		opts := make(map[string]interface{})
-		opts["uniq_id"] = uid
-		rawr, err := config.Client.Call("v1/Storm/Server/status", opts)
-		if err != nil {
-			return nil, "", err
-		}
-		resp := rawr.(map[string]interface{})
-		status, ok := resp["status"]
-		if !ok {
-			return nil, "", fmt.Errorf("problem getting server status")
-		}
-		state := status.(string)
-		log.Printf("status returned: %v", state)
-
-		// Get server details if it's running.
-		if state == "Running" {
-			rawr, err := stormServerDetails(config, uid)
-			if err != nil {
-				return nil, "", err
-			}
-
-			return rawr, state, nil
-		}
-
-		// Return an empty string as if nil is returned the resource will be considered "not found".
-		// See
-		return "", state, nil
-	}
-}
-
-// serverDetails gets server details from the API.
-func stormServerDetails(config *Config, uid string) (interface{}, error) {
-	opts := make(map[string]interface{})
-	opts["uniq_id"] = uid
-	return config.Client.Call("v1/Storm/Server/details", opts)
-}
-
-// updateStormServerResource updates the resource data for the storm server.
-func updateStormServerResource(d *schema.ResourceData, server interface{}) {
-	ss := server.(map[string]interface{})
-
-	fields := stormServerFields
-
-	for _, field := range fields {
-		f, ok := ss[field]
-		if ok {
-			d.Set(field, f)
-		}
-		if field == "uniq_id" {
-			d.SetId(f.(string))
-		}
-	}
+	return params
 }
