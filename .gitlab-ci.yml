@@ -1,6 +1,9 @@
 stages:
   - build
 
+services:
+  - docker:dind
+
 build-image:
   tags:
     - docker-with-registry
