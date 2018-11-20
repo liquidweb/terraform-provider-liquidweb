@@ -6,3 +6,4 @@ terraform.tfvars
 vendor/
 .lwapi.toml
 terraform-provider-liquidweb
+terraform.tfstate*
