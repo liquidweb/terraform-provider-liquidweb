@@ -1,40 +1,11 @@
 package liquidweb
 
 import (
-	"fmt"
 	"strconv"
-	"time"
 
 	network "git.liquidweb.com/masre/liquidweb-go/network"
-	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	lwapi "github.com/liquidweb/go-lwApi"
 )
-
-var dnsRecordFields = []string{
-	"adminEmail",
-	"created",
-	"exchange",
-	"expiry",
-	"fullData",
-	"id",
-	"last_updated",
-	"minimum",
-	"name",
-	"nameserver",
-	"port",
-	"prio",
-	"rdata",
-	"refreshInterval",
-	"regionOverrides",
-	"retry",
-	"serial",
-	"target",
-	"ttl",
-	"type",
-	"weight",
-	"zone_id",
-}
 
 func resourceNetworkDNSRecord() *schema.Resource {
 	return &schema.Resource{
@@ -44,7 +15,7 @@ func resourceNetworkDNSRecord() *schema.Resource {
 		Delete: resourceDeleteNetworkDNSRecord,
 
 		Schema: map[string]*schema.Schema{
-			"adminEmail": &schema.Schema{
+			"admin_email": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -60,7 +31,7 @@ func resourceNetworkDNSRecord() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"fullData": &schema.Schema{
+			"full_data": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -96,11 +67,11 @@ func resourceNetworkDNSRecord() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"refreshInterval": &schema.Schema{
+			"refresh_interval": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"regionOverrides": &schema.Schema{
+			"region_overrides": &schema.Schema{
 				Type:     schema.TypeMap,
 				Computed: true,
 			},
@@ -148,76 +119,51 @@ func resourceCreateNetworkDNSRecord(d *schema.ResourceData, m interface{}) error
 	id := strconv.Itoa(result.ID)
 	d.SetId(id)
 
-	return resourceUpdateStormServer(d, m)
+	return resourceReadNetworkDNSRecord(d, m)
 }
 
 func resourceReadNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
-	uid := d.Id()
-	config := m.(*Config)
-	server, err := stormServerDetails(config, uid)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		errClass, ok := err.(lwapi.LWAPIError)
-		if ok && errClass.ErrorClass == "LW::Exception::RecordNotFound" {
-			d.SetId("")
-			return nil
-		}
 		return err
 	}
+	config := m.(*Config)
+	dnsRecordItem := dnsRecordDetails(config, id)
+	if dnsRecordItem.HasError() {
+		return dnsRecordItem
+	}
 
-	updateStormServerResource(d, server)
-
+	updateDNSRecordResource(d, dnsRecordItem)
 	return nil
 }
 
 func resourceUpdateNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
-	opts := buildUpdateStormServerOpts(d, m)
-	validOpts := pickStormServerUpdateOpts(opts)
+	opts := buildNetworkDNSRecordOpts(d, m)
+	// API call for update does not accept zone info.
+	opts.ZoneID = 0
+	opts.Zone = ""
+
 	config := m.(*Config)
-	_, err := config.Client.Call("v1/Storm/Server/update", validOpts)
-	if err != nil {
-		return err
+	dnsRecordItem := config.LWAPI.NetworkDNS.Update(opts)
+	if dnsRecordItem.HasError() {
+		return dnsRecordItem
 	}
 
-	stateChange := &resource.StateChangeConf{
-		Delay:          10 * time.Second,
-		Pending:        stormServerStates,
-		Refresh:        refreshStormServer(config, d.Id()),
-		Target:         []string{"Running"},
-		Timeout:        20 * time.Minute,
-		NotFoundChecks: 240,
-		MinTimeout:     5 * time.Second,
-	}
-	_, err = stateChange.WaitForState()
-	if err != nil {
-		return err
-	}
-
-	return resourceReadStormServer(d, m)
+	updateDNSRecordResource(d, dnsRecordItem)
+	return nil
 }
 
 func resourceDeleteNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	uid := d.Id()
-	opts := make(map[string]interface{})
-	opts["uniq_id"] = uid
-	_, err := config.Client.Call("v1/Storm/Server/destroy", opts)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return err
 	}
+	params := &network.DNSRecordParams{ID: id}
 
-	stateChange := &resource.StateChangeConf{
-		Delay:          10 * time.Second,
-		Pending:        stormServerStates,
-		Refresh:        refreshStormServer(config, d.Id()),
-		Target:         []string{"Destroying"},
-		Timeout:        20 * time.Minute,
-		NotFoundChecks: 240,
-		MinTimeout:     5 * time.Second,
-	}
-	_, err = stateChange.WaitForState()
-	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for instance (%s) to be destroyed: %s", uid, err)
+	deleteResponse := config.LWAPI.NetworkDNS.Delete(params)
+	if deleteResponse.HasError() {
+		return deleteResponse
 	}
 
 	return nil
@@ -250,4 +196,34 @@ func buildNetworkDNSRecordOpts(d *schema.ResourceData, m interface{}) *network.D
 	}
 
 	return params
+}
+
+// dnsRecordDetails gets a dns record's details from the API.
+func dnsRecordDetails(config *Config, id int) *network.DNSRecordItem {
+	return config.LWAPI.NetworkDNS.Details(id)
+}
+
+// updateDNSRecordResource updates the resource data for the DNS Record.
+func updateDNSRecordResource(d *schema.ResourceData, dr *network.DNSRecordItem) {
+	d.Set("admin_email", dr.AdminEmail)
+	d.Set("created", dr.Created)
+	d.Set("exchange", dr.Exchange)
+	d.Set("expiry", dr.Expiry)
+	d.Set("full_data", dr.FullData)
+	d.Set("last_updated", dr.LastUpdated)
+	d.Set("minimum", dr.Minimum)
+	d.Set("name", dr.Name)
+	d.Set("nameserver", dr.Nameserver)
+	d.Set("port", dr.Port)
+	d.Set("prio", dr.Prio)
+	d.Set("rdata", dr.RData)
+	d.Set("refresh_interval", dr.RefreshInterval)
+	d.Set("region_overrides", dr.RegionOverrides)
+	d.Set("retry", dr.Retry)
+	d.Set("serial", dr.Serial)
+	d.Set("target", dr.Target)
+	d.Set("ttl", dr.TTL)
+	d.Set("type", dr.Type)
+	d.Set("weight", dr.Weight)
+	d.Set("zone_id", dr.ZoneID)
 }
