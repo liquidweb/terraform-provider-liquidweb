@@ -2,21 +2,22 @@
 
 
 [[projects]]
-  branch = "master"
-  digest = "1:476fbd7b7cbffa62759afc7652b77bd5590919f10f9492c16d0dae60c278218d"
+  branch = "add-dns"
+  digest = "1:3c8814d53c8fe16da5781058bba3e3b46b5498ae66ddd1f2180b828874d50561"
   name = "git.liquidweb.com/masre/liquidweb-go"
   packages = [
     ".",
-    "api",
     "client",
-    "networkzone",
+    "network",
+    "network/dns",
+    "network/zone",
     "storm",
     "storm/config",
     "storm/server",
     "types",
   ]
   pruneopts = "UT"
-  revision = "645296224c03d8eb0dd807fa57c080c72e5a5ede"
+  revision = "09bd511a79be7b5b7abb60028321fbef7fe48add"
 
 [[projects]]
   digest = "1:dc2ba13235a4c8f80a40599575a3f10acb4736cb372f1a68b88333c06564471d"
@@ -629,7 +630,7 @@
   analyzer-version = 1
   input-imports = [
     "git.liquidweb.com/masre/liquidweb-go",
-    "git.liquidweb.com/masre/liquidweb-go/api",
+    "git.liquidweb.com/masre/liquidweb-go/network",
     "git.liquidweb.com/masre/liquidweb-go/storm",
     "github.com/hashicorp/terraform/helper/resource",
     "github.com/hashicorp/terraform/helper/schema",
