@@ -2,10 +2,6 @@ variable "liquidweb_config_path" {
   type = "string"
 }
 
-variable "api_server_password" {
-  type = "string"
-}
-
 provider "liquidweb" {
   config_path = "${var.liquidweb_config_path}"
 }
@@ -30,16 +26,16 @@ resource "liquidweb_storm_server" "api_servers" {
   zone           = "${data.liquidweb_network_zone.api.id}"
   template       = "UBUNTU_1804_UNMANAGED"                     // ubuntu 18.04
   domain         = "api.dev6.${count.index + 1}.mwx.masre.net"
-  password       = "${var.api_server_password}"
+  password       = "11111aA"
   public_ssh_key = "${file("./devkey.pub")}"
 }
 
-resource "liquidweb_dns_record" "api_servers" {
+resource "liquidweb_network_dns_record" "api_servers" {
   count = "${liquidweb_storm_server.api_servers.count}"
 
   name  = "api-${count.index}"
   type  = "A"
-  rdata = "${liquidweb_dns_record.api_servers}"
+  rdata = "${element(liquidweb_storm_server.api_servers.*.ip, count.index)}"
   zone  = "masre.net"
 }
 

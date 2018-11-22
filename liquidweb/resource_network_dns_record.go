@@ -35,10 +35,6 @@ func resourceNetworkDNSRecord() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"id": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
 			"last_updated": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -101,7 +97,11 @@ func resourceNetworkDNSRecord() *schema.Resource {
 			},
 			"zone_id": &schema.Schema{
 				Type:     schema.TypeInt,
-				Computed: true,
+				Optional: true,
+			},
+			"zone": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 	}
@@ -111,7 +111,11 @@ func resourceCreateNetworkDNSRecord(d *schema.ResourceData, m interface{}) error
 	opts := buildNetworkDNSRecordOpts(d, m)
 	config := m.(*Config)
 
-	result := config.LWAPI.NetworkDNS.Create(opts)
+	result, err := config.LWAPI.NetworkDNS.Create(opts)
+	if err != nil {
+		return err
+	}
+
 	if result.HasError() {
 		return result
 	}
