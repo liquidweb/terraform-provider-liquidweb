@@ -33,6 +33,10 @@
   branch = "master"
   name = "github.com/liquidweb/go-lwApi"
 
+[[constraint]]
+  branch = "add-dns"
+  name = "git.liquidweb.com/masre/liquidweb-go"
+
 [prune]
   go-tests = true
   unused-packages = true
