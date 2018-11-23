@@ -2,8 +2,7 @@
 
 
 [[projects]]
-  branch = "add-dns"
-  digest = "1:e3e6689ed1938b060774debae6722f52504eb8b9bc722f9f9fd0765322542c3a"
+  digest = "1:5ab3cf8407020e046465e017e89df89300ff2f059fbd179e17f9da1b61baa630"
   name = "git.liquidweb.com/masre/liquidweb-go"
   packages = [
     ".",
@@ -17,7 +16,8 @@
     "types",
   ]
   pruneopts = "UT"
-  revision = "056e8d2b41b83b228f8afcaeb554a23ca72640bb"
+  revision = "7657fec80fc7dd4f6ce62dc0cfef835dc57cfed5"
+  version = "1.1.0"
 
 [[projects]]
   digest = "1:dc2ba13235a4c8f80a40599575a3f10acb4736cb372f1a68b88333c06564471d"
