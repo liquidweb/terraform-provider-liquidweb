@@ -3,7 +3,7 @@ package liquidweb
 import (
 	"fmt"
 
-	lwapi "git.liquidweb.com/masre/liquidweb-go"
+	lwnetwork "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -71,7 +71,7 @@ func dataSourceLWNetworkZone() *schema.Resource {
 // dataSourceLWNetworkZoneRead gets the available network zones.
 func dataSourceLWNetworkZoneRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
-	params := &lwapi.ZoneListParams{}
+	params := &lwnetwork.ZoneListParams{}
 
 	_, ok := d.GetOk("region_name")
 	if ok {
@@ -79,12 +79,9 @@ func dataSourceLWNetworkZoneRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	result, err := config.LWAPI.NetworkZone.List(params)
+
 	if err != nil {
 		return err
-	}
-
-	if result.HasError() {
-		return result
 	}
 
 	filteredNetworkZones := filterLWNetworkZones(result, d)
@@ -106,14 +103,14 @@ func dataSourceLWNetworkZoneRead(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-func filterLWNetworkZones(zoneList *lwapi.ZoneList, d *schema.ResourceData) []lwapi.Zone {
+func filterLWNetworkZones(zoneList *lwnetwork.ZoneList, d *schema.ResourceData) []lwnetwork.Zone {
 	_, nameOk := d.GetOk("name")
 	var name string
 	if nameOk {
 		name = d.Get("name").(string)
 	}
 
-	filteredNetworkZones := []lwapi.Zone{}
+	filteredNetworkZones := []lwnetwork.Zone{}
 
 	for _, z := range zoneList.Items {
 		if nameOk && name != z.Name {

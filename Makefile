@@ -13,16 +13,19 @@ install:
 	go install
 
 init:
-	terraform init
+	terraform init ${PROJECT}
+
+refresh:
+	terraform refresh -var liquidweb_config_path=${liquidweb_config_path} -state ${PROJECT}/terraform.tfstate -backup=${PROJECT}/terraform.tfstate.backup ${PROJECT}
 
 plan:
-	terraform plan -var liquidweb_config_path=${liquidweb_config_path}
+	terraform plan -var liquidweb_config_path=${liquidweb_config_path} ${PROJECT}
 
 apply:
-	terraform apply -auto-approve -var liquidweb_config_path=${liquidweb_config_path}
+	terraform apply -auto-approve -var liquidweb_config_path=${liquidweb_config_path} -state ${PROJECT}/terraform.tfstate -backup=${PROJECT}/terraform.tfstate.backup ${PROJECT}
 
 destroy:
-	TF_LOG=trace terraform destroy -auto-approve -var liquidweb_config_path=${liquidweb_config_path}
+	terraform destroy -auto-approve -var liquidweb_config_path=${liquidweb_config_path} -state ${PROJECT}/terraform.tfstate -backup=${PROJECT}/terraform.tfstate.backup ${PROJECT}
 
 devplan: build init plan
 

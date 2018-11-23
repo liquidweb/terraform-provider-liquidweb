@@ -1,7 +1,28 @@
 stages:
   - build
 
-build-image:
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+
+services:
+  - docker:dind
+
+build:
+  except:
+    refs:
+      - master
+  tags:
+    - docker-with-registry
+  stage: build
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -f terraform.Dockerfile -t git.liquidweb.com:4567/masre/terraform-provider-liquidweb .
+
+latest:
+  only:
+    refs:
+      - master
   tags:
     - docker-with-registry
   stage: build
@@ -9,3 +30,14 @@ build-image:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker build -f terraform.Dockerfile -t git.liquidweb.com:4567/masre/terraform-provider-liquidweb .
     - docker push git.liquidweb.com:4567/masre/terraform-provider-liquidweb
+
+tagged:
+  only:
+    - tags
+  tags:
+    - docker-with-registry
+  stage: build
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -f terraform.Dockerfile -t git.liquidweb.com:4567/masre/terraform-provider-liquidweb:$CI_COMMIT_REF_NAME .
+    - docker push git.liquidweb.com:4567/masre/terraform-provider-liquidweb:$CI_COMMIT_REF_NAME
