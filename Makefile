@@ -15,6 +15,9 @@ install:
 init:
 	terraform init
 
+refresh:
+	terraform refresh -var liquidweb_config_path=${liquidweb_config_path}
+
 plan:
 	terraform plan -var liquidweb_config_path=${liquidweb_config_path}
 

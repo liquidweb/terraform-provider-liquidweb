@@ -120,7 +120,7 @@ func resourceCreateNetworkDNSRecord(d *schema.ResourceData, m interface{}) error
 		return result
 	}
 
-	id := strconv.Itoa(result.ID)
+	id := strconv.Itoa(int(result.ID))
 	d.SetId(id)
 
 	return resourceReadNetworkDNSRecord(d, m)
@@ -143,9 +143,17 @@ func resourceReadNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
 
 func resourceUpdateNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
 	opts := buildNetworkDNSRecordOpts(d, m)
-	// API call for update does not accept zone info.
+	// Attach ID to params.
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return err
+	}
+	opts.ID = id
+
+	// API call for update does not accept zone info or type.
 	opts.ZoneID = 0
 	opts.Zone = ""
+	opts.Type = ""
 
 	config := m.(*Config)
 	dnsRecordItem := config.LWAPI.NetworkDNS.Update(opts)

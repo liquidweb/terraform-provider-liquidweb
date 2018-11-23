@@ -33,7 +33,7 @@ resource "liquidweb_storm_server" "api_servers" {
 resource "liquidweb_network_dns_record" "api_servers" {
   count = "${liquidweb_storm_server.api_servers.count}"
 
-  name  = "api-${count.index}"
+  name  = "terraform-testing.api.${count.index}.masre.net"
   type  = "A"
   rdata = "${element(liquidweb_storm_server.api_servers.*.ip, count.index)}"
   zone  = "masre.net"
@@ -85,4 +85,8 @@ resource "liquidweb_network_dns_record" "api_servers" {
 
 output "api_server_ips" {
   value = "${join(",", concat(liquidweb_storm_server.api_servers.*.ip))}"
+}
+
+output "api_server_a_name" {
+  value = "${liquidweb_network_dns_record.api_servers.*.name}"
 }
