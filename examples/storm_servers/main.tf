@@ -18,9 +18,9 @@ resource "liquidweb_storm_server" "api_servers" {
   config_id      = 1090
   zone           = "${data.liquidweb_network_zone.api.id}"
   template       = "UBUNTU_1804_UNMANAGED"                     // ubuntu 18.04
-  domain         = "api.dev6.${count.index + 1}.mwx.masre.net"
+  domain         = "terraform-testing.api.${count.index}.masre.net"
   password       = "11111aA"
-  public_ssh_key = "${file("./devkey.pub")}"
+  public_ssh_key = "${file("${path.module}/devkey.pub")}"
 }
 
 output "api_server_ips" {
