@@ -1,5 +1,6 @@
 stages:
-  - build
+  - latest
+  - tagged
 
 variables:
   DOCKER_HOST: tcp://docker:2375/
@@ -8,11 +9,25 @@ variables:
 services:
   - docker:dind
 
-build-image:
+latest:
+  only:
+    refs:
+      - master
   tags:
     - docker-with-registry
-  stage: build
+  stage: latest
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker build -f terraform.Dockerfile -t git.liquidweb.com:4567/masre/terraform-provider-liquidweb .
     - docker push git.liquidweb.com:4567/masre/terraform-provider-liquidweb
+
+tagged:
+  only:
+    - tags
+  tags:
+    - docker-with-registry
+  stage: tagged
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -f terraform.Dockerfile -t git.liquidweb.com:4567/masre/terraform-provider-liquidweb:$CI_COMMIT_REF_NAME .
+    - docker push git.liquidweb.com:4567/masre/terraform-provider-liquidweb:$CI_COMMIT_REF_NAME
