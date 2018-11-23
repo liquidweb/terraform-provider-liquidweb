@@ -3,6 +3,7 @@ RUN apk add -U make
 RUN mkdir -p /go/src/git.liquidweb.com/masre/terraform-provider-liquidweb
 COPY . /go/src/git.liquidweb.com/masre/terraform-provider-liquidweb
 WORKDIR /go/src/git.liquidweb.com/masre/terraform-provider-liquidweb
+RUN make ensure
 RUN make build
 
 FROM hashicorp/terraform:0.11.8
