@@ -10,8 +10,8 @@ services:
 
 build:
   except:
-    refs:
-      - master
+    - master
+    - tags
   tags:
     - docker-with-registry
   stage: build
