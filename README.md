@@ -9,7 +9,7 @@ Dependencies:
 - Install [dep](https://golang.github.io/dep)
 - Create a `.lwapi.toml` file in the root directory:
 
-```
+```toml
 [lwApi]
 username = "[yourusername]"
 password = "[yourpassword]"
@@ -31,7 +31,7 @@ In the `examples` directory there are Terraform projects illustrating how to cre
 
 #### Storm Servers
 
-```
+```terraform
 resource "liquidweb_storm_server" "api_servers" {
   count = 1
 
@@ -46,7 +46,7 @@ resource "liquidweb_storm_server" "api_servers" {
 
 #### Storm Configs
 
-```
+```terraform
 data "liquidweb_network_zone" "testing" {
   name        = "Zone C"
   region_name = "US Central"
@@ -62,7 +62,7 @@ data "liquidweb_storm_server_config" "testing" {
 
 #### DNS
 
-```
+```terraform
 resource "liquidweb_network_dns_record" "testing_a_record" {
   name  = "terraform-testing.api.${count.index}.masre.net"
   type  = "A"
