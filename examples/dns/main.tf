@@ -7,7 +7,7 @@ provider "liquidweb" {
 }
 
 resource "liquidweb_network_dns_record" "testing_a_record" {
-  name  = "terraform-testing.api.${count.index}.masre.net"
+  name  = "terraform-testing.api.masre.net"
   type  = "A"
   rdata = "127.0.0.1"
   zone  = "masre.net"
