@@ -70,3 +70,11 @@ resource "liquidweb_network_dns_record" "testing_a_record" {
   zone  = "masre.net"
 }
 ```
+
+# Developing
+
+This project uses [go modules](https://github.com/golang/go/wiki/Modules#quick-start) so you can clone this repo anywhere you'd like.
+
+- `make build` - clean and build the provider
+- `make clean` - remove the build provider
+- `make install` - install the provider
