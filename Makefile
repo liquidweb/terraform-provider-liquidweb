@@ -1,7 +1,7 @@
 liquidweb_config_path=${PWD}/.lwapi.toml
 
 build: clean
-	CGO_ENABLED=0 go build
+	go build
 
 clean:
 	rm -f terraform-provider-liquidweb
