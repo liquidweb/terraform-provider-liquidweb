@@ -6,9 +6,6 @@ build: clean
 clean:
 	rm -f terraform-provider-liquidweb
 
-ensure:
-	dep ensure
-
 install:
 	go install
 
