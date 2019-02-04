@@ -90,6 +90,7 @@ func resourceNetworkDNSRecord() *schema.Resource {
 			"type": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"weight": &schema.Schema{
 				Type:     schema.TypeInt,
