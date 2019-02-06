@@ -76,6 +76,8 @@ func resourceReadNetworkVIP(d *schema.ResourceData, m interface{}) error {
 		return vipItem
 	}
 
+	updateVIPResource(d, vipItem)
+
 	return nil
 }
 
@@ -113,4 +115,5 @@ func updateVIPResource(d *schema.ResourceData, dr *network.VIPItem) {
 	d.Set("activeStatus", dr.ActiveStatus)
 	d.Set("uniq_id", dr.UniqID)
 	d.Set("destroyed", dr.Destroyed)
+	d.Set("ip", dr.IP)
 }
