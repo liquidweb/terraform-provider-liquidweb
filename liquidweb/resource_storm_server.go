@@ -184,9 +184,8 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 		Refresh:        refreshStormServer(config, uid),
 		Target:         []string{"Running"},
 		Timeout:        30 * time.Minute,
-		NotFoundChecks: 240,
-		MinTimeout:     5 * time.Second,
 		NotFoundChecks: 2,
+		MinTimeout:     5 * time.Second,
 	}
 	// https://godoc.org/github.com/hashicorp/terraform/helper/resource#StateRefreshFunc
 	// we need to figure out why returning the updated instance isn't updating the server state. Added a call to update at the end of the refresh just for good measure for now.
