@@ -21,6 +21,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"liquidweb_storm_server":       resourceStormServer(),
 			"liquidweb_network_dns_record": resourceNetworkDNSRecord(),
+			"liquidweb_network_vip":        resourceNetworkVIP(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

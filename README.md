@@ -71,6 +71,15 @@ resource "liquidweb_network_dns_record" "testing_a_record" {
 }
 ```
 
+#### VIP
+
+```terraform
+resource "liquidweb_network_vip" "new_vip" {
+  domain  = "terraform-testing-vip"
+  zone    = 52
+}
+```
+
 # Developing
 
 This project uses [go modules](https://github.com/golang/go/wiki/Modules#quick-start) so you can clone this repo anywhere you'd like, it no longer has to be on the go path.
