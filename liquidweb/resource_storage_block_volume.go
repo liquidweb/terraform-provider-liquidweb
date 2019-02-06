@@ -34,7 +34,7 @@ func resourceStorageBlockVolume() *schema.Resource {
 				Required: true,
 			},
 			"attached_to": &schema.Schema{
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
