@@ -22,6 +22,7 @@ func Provider() *schema.Provider {
 			"liquidweb_storage_block_volume": resourceStorageBlockVolume(),
 			"liquidweb_storm_server":         resourceStormServer(),
 			"liquidweb_network_dns_record":   resourceNetworkDNSRecord(),
+			"liquidweb_network_vip":          resourceNetworkVIP(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
