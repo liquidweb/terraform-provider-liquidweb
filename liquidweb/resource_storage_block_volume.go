@@ -106,10 +106,30 @@ func resourceReadBlockVolume(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceUpdateBlockVolume(d *schema.ResourceData, m interface{}) error {
-	opts := buildBlockVolumeOpts(d, m)
-
 	config := m.(*Config)
-	blockVolumeItem := config.LWAPI.StorageBlockVolume.Update(opts)
+
+	// Resize if size has changed.
+	if d.HasChange("size") {
+		size := d.Get("size").(int)
+
+		resizeOpts := &storage.BlockVolumeParams{
+			NewSize: size,
+			UniqID:  d.Id(),
+		}
+
+		blockVolumeResize := config.LWAPI.StorageBlockVolume.Resize(resizeOpts)
+		if blockVolumeResize.HasError() {
+			return blockVolumeResize
+		}
+	}
+
+	updateOps := &storage.BlockVolumeParams{
+		CrossAttach: d.Get("cross_attach").(bool),
+		Domain:      d.Get("domain").(string),
+		UniqID:      d.Id(),
+	}
+
+	blockVolumeItem := config.LWAPI.StorageBlockVolume.Update(updateOps)
 	if blockVolumeItem.HasError() {
 		return blockVolumeItem
 	}

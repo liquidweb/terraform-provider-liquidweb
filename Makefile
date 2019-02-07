@@ -16,7 +16,7 @@ refresh:
 	terraform refresh -var liquidweb_config_path=${liquidweb_config_path} -state ${EXAMPLE}/terraform.tfstate -backup=${EXAMPLE}/terraform.tfstate.backup ${EXAMPLE}
 
 plan:
-	terraform plan -var liquidweb_config_path=${liquidweb_config_path} ${EXAMPLE}
+	terraform plan -var liquidweb_config_path=${liquidweb_config_path} -state ${EXAMPLE}/terraform.tfstate ${EXAMPLE}
 
 apply:
 	terraform apply -auto-approve -var liquidweb_config_path=${liquidweb_config_path} -state ${EXAMPLE}/terraform.tfstate -backup=${EXAMPLE}/terraform.tfstate.backup ${EXAMPLE}
