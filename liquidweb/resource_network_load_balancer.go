@@ -15,7 +15,7 @@ func resourceNetworkLoadBalancer() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
-				Computed: true,
+				Required: true,
 			},
 			"nodes": &schema.Schema{
 				Type:     schema.TypeList,
@@ -69,6 +69,10 @@ func resourceNetworkLoadBalancer() *schema.Resource {
 			"strategy": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"vip": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -158,4 +162,5 @@ func updateLoadBalancerResource(d *schema.ResourceData, lb *network.LoadBalancer
 	d.Set("session_persistence", lb.SessionPersistence)
 	d.Set("ssl_includes", lb.SSLIncludes)
 	d.Set("strategy", lb.Strategy)
+	d.Set("vip", lb.VIP)
 }

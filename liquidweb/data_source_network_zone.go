@@ -30,7 +30,7 @@ func dataSourceLWNetworkZone() *schema.Resource {
 			},
 			"region": {
 				Type:     schema.TypeMap,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {

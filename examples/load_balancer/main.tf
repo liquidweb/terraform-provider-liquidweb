@@ -11,37 +11,41 @@ data "liquidweb_network_zone" "testing" {
   region_name = "US Central"
 }
 
-resource "liquidweb_storm_server" "test_server" {
+resource "liquidweb_storm_server" "testing" {
   count = 1
 
   config_id      = 1090
-  zone           = "${data.liquidweb_network_zone.api.id}"
+  zone           = "${data.liquidweb_network_zone.testing.id}"
   template       = "UBUNTU_1804_UNMANAGED"                          // ubuntu 18.04
   domain         = "terraform-testing.api.${count.index}.masre.net"
   password       = "11111aA"
   public_ssh_key = "${file("${path.module}/devkey.pub")}"
 }
 
-resource "liquidweb_load_balancer" "testing_some_space_balls" {
-  name   = "spaceballz44"
-  region = "${data.liquidweb_network_zone.testing.region.id}"
+resource "liquidweb_network_load_balancer" "testing_some_space_balls" {
+  depends_on = ["data.liquidweb_network_zone.testing"]
+  name       = "spaceballz44"
+
+  #region     = "${data.liquidweb_network_zone.testing.region.id}"
 
   nodes = [
-    "${liquidweb_storm_server.test_server.ip}",
+    "${liquidweb_storm_server.testing.ip}",
   ]
-
   services = [
     {
       src_port  = 80
       dest_port = 80
     },
   ]
-
   #session_persistence = false
   #ssl_termination = false
   strategy = "roundrobin"
 }
 
 output "space_balls" {
-  value = "${liquidweb_load_balancer.testing_some_space_balls.vip}"
+  value = "${liquidweb_network_load_balancer.testing_some_space_balls.vip}"
+}
+
+output "region" {
+  value = "${data.liquidweb_network_zone.testing.id}"
 }
