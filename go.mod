@@ -1,9 +1,7 @@
 module git.liquidweb.com/masre/terraform-provider-liquidweb
 
-replace git.liquidweb.com/masre/liquidweb-go => ../liquidweb-go
-
 require (
-	git.liquidweb.com/masre/liquidweb-go v1.3.0
+	git.liquidweb.com/masre/liquidweb-go v1.4.0
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/apparentlymart/go-cidr v1.0.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
