@@ -19,6 +19,7 @@ plan:
 	terraform plan -var liquidweb_config_path=${liquidweb_config_path} -state ${EXAMPLE}/terraform.tfstate ${EXAMPLE}
 
 apply:
+  # For proxy use `http_proxy=http://localhost:8080 https_proxy=http://localhost:8080 ...`
 	terraform apply -auto-approve -var liquidweb_config_path=${liquidweb_config_path} -state ${EXAMPLE}/terraform.tfstate -backup=${EXAMPLE}/terraform.tfstate.backup ${EXAMPLE}
 
 destroy:
