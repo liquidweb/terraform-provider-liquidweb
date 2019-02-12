@@ -3,6 +3,7 @@ package liquidweb
 import (
 	network "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 )
 
 func resourceNetworkLoadBalancer() *schema.Resource {
@@ -17,27 +18,32 @@ func resourceNetworkLoadBalancer() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"nodes": &schema.Schema{
-				Type:     schema.TypeList,
+			"nodes": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.NoZeroValues,
+				},
 				Optional: true,
-				Elem:     schema.TypeString,
 			},
 			"region": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
 			"services": &schema.Schema{
-				Type:     schema.TypeMap,
+				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"src_port": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validation.NoZeroValues,
 						},
 						"dest_port": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validation.NoZeroValues,
 						},
 					},
 				},
@@ -45,6 +51,7 @@ func resourceNetworkLoadBalancer() *schema.Resource {
 			"session_persistence": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
+				Default:  false,
 			},
 			"ssl_cert": &schema.Schema{
 				Type:     schema.TypeString,
@@ -65,6 +72,7 @@ func resourceNetworkLoadBalancer() *schema.Resource {
 			"ssl_termination": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
+				Default:  false,
 			},
 			"strategy": &schema.Schema{
 				Type:     schema.TypeString,
@@ -133,9 +141,9 @@ func resourceDeleteNetworkLoadBalancer(d *schema.ResourceData, m interface{}) er
 func buildNetworkLoadBalancerOpts(d *schema.ResourceData, m interface{}) network.LoadBalancerParams {
 	params := network.LoadBalancerParams{
 		Name:               d.Get("name").(string),
-		Nodes:              d.Get("nodes").([]network.LoadBalancerNodeParams),
+		Nodes:              expandSetToStrings(d.Get("nodes").(*schema.Set).List()),
 		Region:             d.Get("region").(int),
-		Services:           d.Get("services").([]network.LoadBalancerServiceParams),
+		Services:           expandServicesSet(d.Get("services").(*schema.Set).List()),
 		SessionPersistence: d.Get("session_persistence").(bool),
 		SSLCert:            d.Get("ssl_cert").(string),
 		SSLIncludes:        d.Get("ssl_includes").(bool),
@@ -163,4 +171,18 @@ func updateLoadBalancerResource(d *schema.ResourceData, lb *network.LoadBalancer
 	d.Set("ssl_includes", lb.SSLIncludes)
 	d.Set("strategy", lb.Strategy)
 	d.Set("vip", lb.VIP)
+}
+
+// expandServicesSet expands types.TypeSet into an actual services set.
+func expandServicesSet(services []interface{}) []network.LoadBalancerServiceParams {
+	expandedServices := make([]network.LoadBalancerServiceParams, len(services))
+	for i, v := range services {
+		service := v.(map[string]interface{})
+		expandedServices[i] = network.LoadBalancerServiceParams{
+			SrcPort:  service["src_port"].(int),
+			DestPort: service["dest_port"].(int),
+		}
+	}
+
+	return expandedServices
 }

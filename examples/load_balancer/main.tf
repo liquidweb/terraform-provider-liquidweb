@@ -26,7 +26,7 @@ resource "liquidweb_network_load_balancer" "testing_some_space_balls" {
   depends_on = ["data.liquidweb_network_zone.testing"]
   name       = "spaceballz44"
 
-  #region     = "${data.liquidweb_network_zone.testing.region.id}"
+  region     = "${data.liquidweb_network_zone.testing.region_id}"
 
   nodes = [
     "${liquidweb_storm_server.testing.ip}",
@@ -46,6 +46,6 @@ output "space_balls" {
   value = "${liquidweb_network_load_balancer.testing_some_space_balls.vip}"
 }
 
-output "region" {
-  value = "${data.liquidweb_network_zone.testing.id}"
+output "region_id" {
+  value = "${data.liquidweb_network_zone.testing.region_id}"
 }

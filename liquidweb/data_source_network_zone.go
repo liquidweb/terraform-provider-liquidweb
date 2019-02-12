@@ -44,6 +44,10 @@ func dataSourceLWNetworkZone() *schema.Resource {
 					},
 				},
 			},
+			"region_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			"status": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -99,6 +103,7 @@ func dataSourceLWNetworkZoneRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("status", item.Status)
 	d.Set("valid_source_hvs", item.ValidSourceHVS)
 	d.Set("region_name", item.Region.Name)
+	d.Set("region_id", item.Region.ID)
 
 	return nil
 }
