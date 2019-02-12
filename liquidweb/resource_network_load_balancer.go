@@ -170,7 +170,7 @@ func updateLoadBalancerResource(d *schema.ResourceData, lb *network.LoadBalancer
 	d.Set("session_persistence", lb.SessionPersistence)
 	d.Set("ssl_includes", lb.SSLIncludes)
 	d.Set("strategy", lb.Strategy)
-	d.Set("vip", lb.VIP)
+	d.Set("vip", lb.VIP.String())
 }
 
 // expandServicesSet expands types.TypeSet into an actual services set.
