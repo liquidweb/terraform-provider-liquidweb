@@ -26,17 +26,23 @@ resource "liquidweb_network_load_balancer" "testing_some_space_balls" {
   depends_on = ["data.liquidweb_network_zone.testing"]
   name       = "spaceballz44"
 
-  region     = "${data.liquidweb_network_zone.testing.region_id}"
+  region = "${data.liquidweb_network_zone.testing.region_id}"
 
   nodes = [
     "${liquidweb_storm_server.testing.ip}",
   ]
+
   services = [
     {
       src_port  = 80
       dest_port = 80
     },
+    {
+      src_port  = 1337
+      dest_port = 1337
+    },
   ]
+
   #session_persistence = false
   #ssl_termination = false
   strategy = "roundrobin"

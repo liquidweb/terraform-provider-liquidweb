@@ -116,8 +116,9 @@ func resourceReadNetworkLoadBalancer(d *schema.ResourceData, m interface{}) erro
 }
 
 func resourceUpdateNetworkLoadBalancer(d *schema.ResourceData, m interface{}) error {
-	opts := buildNetworkLoadBalancerOpts(d, m)
+	opts := buildNetworkLoadBalancerUpdateOpts(d, m)
 	config := m.(*Config)
+
 	loadBalancerItem := config.LWAPI.NetworkLoadBalancer.Update(opts)
 	if loadBalancerItem.HasError() {
 		return loadBalancerItem
@@ -137,12 +138,31 @@ func resourceDeleteNetworkLoadBalancer(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
-// buildNetworkLoadBalancerOpts builds options for a create/update load balancer API call.
+// buildNetworkLoadBalancerOpts builds options for a create load balancer API call.
 func buildNetworkLoadBalancerOpts(d *schema.ResourceData, m interface{}) network.LoadBalancerParams {
 	params := network.LoadBalancerParams{
 		Name:               d.Get("name").(string),
 		Nodes:              expandSetToStrings(d.Get("nodes").(*schema.Set).List()),
 		Region:             d.Get("region").(int),
+		Services:           expandServicesSet(d.Get("services").(*schema.Set).List()),
+		SessionPersistence: d.Get("session_persistence").(bool),
+		SSLCert:            d.Get("ssl_cert").(string),
+		SSLIncludes:        d.Get("ssl_includes").(bool),
+		SSLInt:             d.Get("ssl_int").(string),
+		SSLKey:             d.Get("ssl_key").(string),
+		SSLTermination:     d.Get("ssl_termination").(bool),
+		Strategy:           d.Get("strategy").(string),
+	}
+
+	return params
+}
+
+// buildNetworkLoadBalancerUpdateOpts builds options for a update load balancer API call.
+func buildNetworkLoadBalancerUpdateOpts(d *schema.ResourceData, m interface{}) network.LoadBalancerParams {
+	params := network.LoadBalancerParams{
+		UniqID:             d.Id(),
+		Name:               d.Get("name").(string),
+		Nodes:              expandSetToStrings(d.Get("nodes").(*schema.Set).List()),
 		Services:           expandServicesSet(d.Get("services").(*schema.Set).List()),
 		SessionPersistence: d.Get("session_persistence").(bool),
 		SSLCert:            d.Get("ssl_cert").(string),
