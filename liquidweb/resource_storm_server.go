@@ -183,8 +183,8 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 		Pending:        stormServerStates,
 		Refresh:        refreshStormServer(config, uid),
 		Target:         []string{"Running"},
-		Timeout:        20 * time.Minute,
-		NotFoundChecks: 240,
+		Timeout:        30 * time.Minute,
+		NotFoundChecks: 2,
 		MinTimeout:     5 * time.Second,
 	}
 	// https://godoc.org/github.com/hashicorp/terraform/helper/resource#StateRefreshFunc

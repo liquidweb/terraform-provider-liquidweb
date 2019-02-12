@@ -32,7 +32,7 @@ In the `examples` directory there are Terraform projects illustrating how to cre
 #### Storm Servers
 
 ```terraform
-resource "liquidweb_storm_server" "api_servers" {
+resource "liquidweb_storm_server" "testing" {
   count = 1
 
   config_id      = 1090
@@ -63,7 +63,7 @@ data "liquidweb_storm_server_config" "testing" {
 #### DNS
 
 ```terraform
-resource "liquidweb_network_dns_record" "testing_a_record" {
+resource "liquidweb_network_dns_record" "testing" {
   name  = "terraform-testing.api.${count.index}.masre.net"
   type  = "A"
   rdata = "127.0.0.1"
@@ -71,10 +71,20 @@ resource "liquidweb_network_dns_record" "testing_a_record" {
 }
 ```
 
+#### Block Volumes
+
+```terraform
+resource "liquidweb_network_block_volume" "testing" {
+  attach = "2GHUN4"
+  domain = "blarstacoman"
+  size   = 10
+}
+```
+
 #### VIP
 
 ```terraform
-resource "liquidweb_network_vip" "new_vip" {
+resource "liquidweb_network_vip" "testing" {
   domain  = "terraform-testing-vip"
   zone    = 52
 }

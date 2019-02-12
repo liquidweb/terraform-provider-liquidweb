@@ -19,6 +19,7 @@ func Provider() *schema.Provider {
 			"liquidweb_storm_server_config": dataSourceLWStormServerConfig(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			"liquidweb_storage_block_volume":  resourceStorageBlockVolume(),
 			"liquidweb_storm_server":          resourceStormServer(),
 			"liquidweb_network_dns_record":    resourceNetworkDNSRecord(),
 			"liquidweb_network_load_balancer": resourceNetworkLoadBalancer(),
