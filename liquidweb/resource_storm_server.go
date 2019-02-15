@@ -81,6 +81,7 @@ func resourceStormServer() *schema.Resource {
 			"backup_plan": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Default:  "none",
 			},
 			"backup_quota": &schema.Schema{
 				Type:     schema.TypeInt,
