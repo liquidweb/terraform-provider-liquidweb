@@ -67,7 +67,7 @@ func resourceStorageBlockVolume() *schema.Resource {
 			},
 			"zone_availability": &schema.Schema{
 				Type:     schema.TypeList,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
