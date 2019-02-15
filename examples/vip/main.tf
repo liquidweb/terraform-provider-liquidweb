@@ -7,8 +7,8 @@ provider "liquidweb" {
 }
 
 resource "liquidweb_network_vip" "new_vip" {
-  domain  = "terraform-testing-vip"
-  zone    = 28
+  domain = "terraform-testing-vip"
+  zone   = 28
 }
 
 output "vip_name" {
