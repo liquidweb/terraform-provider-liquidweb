@@ -86,6 +86,7 @@ func resourceNetworkDNSRecord() *schema.Resource {
 			"ttl": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
+				Default:  3600,
 			},
 			"type": &schema.Schema{
 				Type:     schema.TypeString,
@@ -98,11 +99,11 @@ func resourceNetworkDNSRecord() *schema.Resource {
 			},
 			"zone_id": &schema.Schema{
 				Type:     schema.TypeInt,
-				Optional: true,
+				Computed: true,
 			},
 			"zone": &schema.Schema{
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 		},
 	}
@@ -185,27 +186,12 @@ func resourceDeleteNetworkDNSRecord(d *schema.ResourceData, m interface{}) error
 // buildNetworkDNSRecordOpts builds options for a create/update DNS record API call.
 func buildNetworkDNSRecordOpts(d *schema.ResourceData, m interface{}) *network.DNSRecordParams {
 	params := &network.DNSRecordParams{
+		Zone:  d.Get("zone").(string),
 		Name:  d.Get("name").(string),
 		Prio:  d.Get("prio").(int),
 		RData: d.Get("rdata").(string),
 		Type:  d.Get("type").(string),
-	}
-
-	// Add Zone ID if provided.
-	zid := d.Get("zone_id").(int)
-	if zid > 0 {
-		params.ZoneID = zid
-	}
-
-	// Add Zone if Zone ID isn't set.
-	zone := d.Get("zone").(string)
-	if zid == 0 {
-		params.Zone = zone
-	}
-
-	ttl := d.Get("ttl").(int)
-	if ttl > 0 {
-		params.TTL = ttl
+		TTL:   d.Get("ttl").(int),
 	}
 
 	return params
