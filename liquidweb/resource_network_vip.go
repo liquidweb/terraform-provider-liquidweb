@@ -64,6 +64,7 @@ func resourceCreateNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(result.UniqID)
+	d.Set("zone", d.Get("zone"))
 
 	return resourceReadNetworkVIP(d, m)
 }
@@ -110,7 +111,6 @@ func VIPDetails(config *Config, id string) *network.VIPItem {
 // updateVIPResource updates the resource data for the VIP.
 func updateVIPResource(d *schema.ResourceData, dr *network.VIPItem) {
 	d.Set("domain", dr.Domain)
-	d.Set("zone", dr.Zone)
 	d.Set("active", dr.Active)
 	d.Set("activeStatus", dr.ActiveStatus)
 	d.Set("uniq_id", dr.UniqID)
