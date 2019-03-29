@@ -392,7 +392,12 @@ func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
 		if !ok {
 			return nil, "", fmt.Errorf("problem getting server status")
 		}
-		state := status.(string)
+		state, ok := status.(string)
+		if !ok {
+			log.Printf("resp %+v", resp)
+			return nil, "", fmt.Errorf("no status returned")
+		}
+
 		log.Printf("status returned: %v", state)
 
 		// Get server details if it's running.
