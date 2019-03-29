@@ -56,6 +56,7 @@ var stormServerStates = []string{
 	"Removing IP",
 	"Provisioning",
 	"Shutdown",
+	"NotReady",
 }
 
 func resourceStormServer() *schema.Resource {
@@ -195,7 +196,7 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	return resourceUpdateStormServer(d, m)
+	return resourceReadStormServer(d, m)
 }
 
 func resourceReadStormServer(d *schema.ResourceData, m interface{}) error {
@@ -399,6 +400,25 @@ func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
 			rawr, err := stormServerDetails(config, uid)
 			if err != nil {
 				return nil, "", err
+			}
+
+			// Ensure we have an IP, otherwise return a pseudo-status until it does have an IP.
+			ss := rawr.(map[string]interface{})
+			_, ok := ss["ip"]
+			log.Printf("ip field %t", ok)
+			if !ok {
+				return nil, "NotReady", nil
+			}
+			ip, ok := ss["ip"].(string)
+			log.Printf("ip field a string %t", ok)
+			if !ok {
+				return nil, "NotReady", nil
+			}
+
+			log.Printf("ip field %s", ip)
+
+			if len(ip) == 0 {
+				return nil, "NotReady", nil
 			}
 
 			return rawr, state, nil
