@@ -46,6 +46,7 @@ func resourceNetworkDNSRecord() *schema.Resource {
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"nameserver": &schema.Schema{
 				Type:     schema.TypeString,
