@@ -87,7 +87,7 @@ func resourceNetworkDNSRecord() *schema.Resource {
 			"ttl": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default:  3600,
+				Default:  300,
 			},
 			"type": &schema.Schema{
 				Type:     schema.TypeString,
