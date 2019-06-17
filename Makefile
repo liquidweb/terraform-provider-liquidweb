@@ -1,13 +1,22 @@
 liquidweb_config_path=${PWD}/.lwapi.toml
+image=git.liquidweb.com:4567/masre/terraform-provider-liquidweb
+dev_image=${image}:dev
+mount=-v ${PWD}:/usr/src/terraform-provider-liquidweb
 
 build: clean
-	go build
+	go build -o /bin/terraform-provider-liquidweb
 
 clean:
 	rm -f terraform-provider-liquidweb
 
 install:
 	go install
+
+dev_image:
+	docker build --target builder -t ${dev_image} .
+
+shell: dev_image
+	docker run -it ${mount} --entrypoint sh ${dev_image}
 
 init:
 	terraform init ${EXAMPLE}

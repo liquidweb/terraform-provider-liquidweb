@@ -46,8 +46,14 @@ func GetConfig(path string) (interface{}, error) {
 	url := vc.GetString("lwapi.url")
 	timeout := vc.GetInt("lwapi.Timeout")
 
+	config := lwapi.LWAPIConfig{
+		Username: &username,
+		Password: &password,
+		Url:      url,
+	}
+
 	// Initialize original LW go client.
-	client, err := lwapi.New(vc)
+	client, err := lwapi.New(&config)
 	if err != nil {
 		return nil, err
 	}
