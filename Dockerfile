@@ -8,8 +8,3 @@ RUN make build
 
 FROM hashicorp/terraform:0.12.2
 COPY --from=builder /usr/src/terraform-provider-liquidweb/terraform-provider-liquidweb /bin
-RUN apk add -U jq curl bash && \
-  curl -SsL https://github.com/kvz/json2hcl/releases/download/v0.0.6/json2hcl_v0.0.6_linux_amd64 -o /usr/local/bin/json2hcl && \
-  chmod 755 /usr/local/bin/json2hcl && \
-  json2hcl -version && \
-  curl https://sdk.cloud.google.com | bash

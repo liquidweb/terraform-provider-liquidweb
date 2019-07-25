@@ -4,7 +4,7 @@ dev_image=${image}:dev
 mount=-v ${PWD}:/usr/src/terraform-provider-liquidweb
 
 build: clean
-	go build -o /bin/terraform-provider-liquidweb
+	go build -o terraform-provider-liquidweb
 
 clean:
 	rm -f terraform-provider-liquidweb
@@ -42,7 +42,7 @@ key:
 	ssh-keygen -N '' -C devkey -f ${EXAMPLE}/devkey
 
 image:
-	docker build -f terraform.Dockerfile -t git.liquidweb.com:4567/masre/terraform-provider-liquidweb .
+	docker build -f Dockerfile -t git.liquidweb.com:4567/masre/terraform-provider-liquidweb .
 
 push_image:
 	docker push git.liquidweb.com:4567/masre/terraform-provider-liquidweb
