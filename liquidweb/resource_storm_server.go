@@ -394,8 +394,8 @@ func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
 		}
 		state, ok := status.(string)
 		if !ok {
-			log.Printf("resp %+v", resp)
-			return nil, "", fmt.Errorf("no status returned")
+			log.Printf("no status returned, resp %+v", resp)
+			return nil, "NotReady", nil
 		}
 
 		log.Printf("status returned: %v", state)
