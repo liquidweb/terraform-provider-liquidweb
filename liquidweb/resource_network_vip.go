@@ -76,8 +76,11 @@ func resourceReadNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	vipItem := VIPDetails(config, d.Id())
 
 	if vipItem.HasError() {
-		// If VIP was destroyed outside of Terraform, just update the resource data with what should be a nil valued struct, vipItem.
-		if !strings.Contains(vipItem.Error(), "LW::Exception::RecordNotFound") {
+		// If VIP was destroyed outside of Terraform, set id to nil value and return nil.
+		if strings.Contains(vipItem.Error(), "LW::Exception::RecordNotFound") {
+			d.SetId("")
+			return nil
+		} else {
 			return vipItem
 		}
 	}
