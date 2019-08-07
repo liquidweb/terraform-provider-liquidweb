@@ -80,9 +80,9 @@ func resourceReadNetworkVIP(d *schema.ResourceData, m interface{}) error {
 		if strings.Contains(vipItem.Error(), "LW::Exception::RecordNotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			return vipItem
 		}
+
+		return vipItem
 	}
 
 	updateVIPResource(d, vipItem)
