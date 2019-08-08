@@ -1,9 +1,18 @@
 FROM hashicorp/terraform:0.12.2 as builder
-RUN mkdir -p /usr/src/infrastructure
-WORKDIR /usr/src/infrastructure
+
+ENV GOCACHE /usr/src/terraform-provider-liquidweb/go/.cache
+ENV GOPATH /usr/src/terraform-provider-liquidweb/go
+
+ARG uid=1003
+
 RUN apk add -U make curl git gcc musl-dev go
-COPY . /usr/src/terraform-provider-liquidweb
+
+RUN mkdir -p /usr/src/infrastructure
+RUN mkdir -p /usr/src/terraform-provider-liquidweb
+RUN adduser -h /usr/src/terraform-provider-liquidweb -g "" -D -u ${uid} builder
+USER builder
 WORKDIR /usr/src/terraform-provider-liquidweb
+COPY . .
 RUN make build
 
 FROM hashicorp/terraform:0.12.2

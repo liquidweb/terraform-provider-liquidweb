@@ -7,3 +7,5 @@ vendor/
 .lwapi.toml
 terraform-provider-liquidweb
 terraform.tfstate*
+go/
+.cache/
