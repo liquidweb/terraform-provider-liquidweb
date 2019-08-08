@@ -1,6 +1,8 @@
 package liquidweb
 
 import (
+	"strings"
+
 	network "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -74,6 +76,12 @@ func resourceReadNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	vipItem := VIPDetails(config, d.Id())
 
 	if vipItem.HasError() {
+		// If VIP was destroyed outside of Terraform, set id to nil value and return nil.
+		if strings.Contains(vipItem.Error(), "LW::Exception::RecordNotFound") {
+			d.SetId("")
+			return nil
+		}
+
 		return vipItem
 	}
 
