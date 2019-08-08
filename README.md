@@ -4,9 +4,6 @@
 
 Dependencies:
 
-- Install [Terraform](https://www.terraform.io)
-- Install [Go](https://www.golang.org)
-- Install [dep](https://golang.github.io/dep)
 - Create a `.lwapi.toml` file in the root directory:
 
 ```toml
@@ -17,8 +14,17 @@ url = "https://api.stormondemand.com"
 timeout = 15
 ```
 
-- `make ensure` -- install Golang dependencies.
+- `make shell` -- drop into a development shell so you can build/test the provider.
+
+The following run inside the development shell:
+
 - `make build` -- build the provider
+- `make init` -- initialize terraform
+- `EXAMPLE=./examples/storm_servers make plan` -- plan an example project
+- `EXAMPLE=./examples/storm_servers make apply` -- apply an example project
+- `EXAMPLE=./examples/storm_servers make destroy` -- destroy an example project
+
+There are also `devplan` and `devapply` make tasks that will do a build and subsequent init followed by plan/apply.
 
 ## Examples
 
@@ -89,13 +95,3 @@ resource "liquidweb_network_vip" "testing" {
   zone    = 52
 }
 ```
-
-# Developing
-
-This project uses [go modules](https://github.com/golang/go/wiki/Modules#quick-start) so you can clone this repo anywhere you'd like, it no longer has to be on the go path.
-
-`make build` - clean and build the provider
-
-`make clean` - remove the build provider
-
-`make install` - install the provider

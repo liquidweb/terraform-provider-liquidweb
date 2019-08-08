@@ -3,8 +3,12 @@ image=git.liquidweb.com:4567/masre/terraform-provider-liquidweb
 dev_image=${image}:dev
 mount=-v ${PWD}:/usr/src/terraform-provider-liquidweb
 
+uid=$(shell id -u)
+gid=$(shell id -g)
+run_as=--user ${uid}:${gid}
+
 build: clean
-	go build -o /bin/terraform-provider-liquidweb
+	go build
 
 clean:
 	rm -f terraform-provider-liquidweb
@@ -16,7 +20,7 @@ dev_image:
 	docker build --target builder -t ${dev_image} .
 
 shell: dev_image
-	docker run -it ${mount} --entrypoint sh ${dev_image}
+	docker run -it ${run_as} ${mount} --entrypoint sh ${dev_image}
 
 init:
 	terraform init ${EXAMPLE}
@@ -42,7 +46,7 @@ key:
 	ssh-keygen -N '' -C devkey -f ${EXAMPLE}/devkey
 
 image:
-	docker build -f terraform.Dockerfile -t git.liquidweb.com:4567/masre/terraform-provider-liquidweb .
+	docker build --target builder -t ${image} .
 
 push_image:
-	docker push git.liquidweb.com:4567/masre/terraform-provider-liquidweb
+	docker push ${image}
