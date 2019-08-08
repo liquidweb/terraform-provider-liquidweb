@@ -12,13 +12,13 @@ data "liquidweb_network_zone" "api" {
 }
 
 resource "liquidweb_storm_server" "api_servers" {
-  count = 1
+  count = 2
 
-  //config_id      = "${data.liquidweb_storm_server_config.api.id}"
-  config_id      = 1090
-  zone           = data.liquidweb_network_zone.api.id
+  config_id = "${data.liquidweb_storm_server_config.api.id}"
+  #config_id      = 1090
+  zone           = 28                      #data.liquidweb_network_zone.api.id
   template       = "UBUNTU_1804_UNMANAGED" // ubuntu 18.04
-  domain         = "terraform-testing.6.api.${count.index}.masre.net"
+  domain         = "terraform-testing.7.api.${count.index}.masre.net"
   password       = "11111aA"
   public_ssh_key = file("${path.root}/devkey.pub")
 }
