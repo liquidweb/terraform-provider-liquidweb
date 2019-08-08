@@ -13,6 +13,9 @@ build: clean
 clean:
 	rm -f terraform-provider-liquidweb
 
+test:
+	go test ./liquidweb
+
 install:
 	go install
 
