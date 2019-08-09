@@ -1,6 +1,8 @@
 package liquidweb
 
 import (
+	"os"
+
 	lwgoapi "git.liquidweb.com/masre/liquidweb-go/client"
 	lwapi "github.com/liquidweb/go-lwApi"
 	"github.com/spf13/viper"
@@ -8,24 +10,27 @@ import (
 
 // Config holds all of the metadata for the provider and the Storm API client.
 type Config struct {
-	Client   *lwapi.Client
-	LWAPI    *lwgoapi.API
-	username string
-	password string
-	URL      string
-	Timeout  int
+	Client         *lwapi.Client
+	LWAPI          *lwgoapi.API
+	username       string
+	password       string
+	URL            string
+	Timeout        int
+	TracingEnabled bool
 }
 
 // NewConfig accepts configuration parameters and returns a Config.
 func NewConfig(username string, password string, url string, timeout int, client *lwapi.Client, nClient *lwgoapi.API) (*Config, error) {
 	c := &Config{
-		username: username,
-		password: password,
-		URL:      url,
-		Timeout:  timeout,
-		Client:   client,
-		LWAPI:    nClient,
+		username:       username,
+		password:       password,
+		URL:            url,
+		Timeout:        timeout,
+		Client:         client,
+		LWAPI:          nClient,
+		TracingEnabled: len(os.Getenv("TF_LOG")) > 0,
 	}
+
 
 	return c, nil
 }

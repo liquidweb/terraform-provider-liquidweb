@@ -2,9 +2,10 @@ package liquidweb
 
 import (
 	"strings"
-
 	network "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
+	opentracing "github.com/opentracing/opentracing-go"
+	opentracinglog "github.com/opentracing/opentracing-go/log"
 )
 
 func resourceNetworkVIP() *schema.Resource {
@@ -55,15 +56,25 @@ func resourceNetworkVIP() *schema.Resource {
 func resourceCreateNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	opts := buildNetworkVIPOpts(d, m)
 	config := m.(*Config)
-
+	
+	tracer := opentracing.GlobalTracer()
+	sp := tracer.StartSpan("create-network-vip")
+	defer sp.Finish()
+	
 	result, err := config.LWAPI.NetworkVIP.Create(opts)
 	if err != nil {
+		sp.LogFields(opentracinglog.String("error", err.Error()))
 		return err
 	}
 
 	if result.HasError() {
+			sp.LogFields(
+				opentracinglog.String("error", result.Error()),
+			)
 		return result
 	}
+
+	sp.Finish()
 
 	d.SetId(result.UniqID)
 	d.Set("zone", d.Get("zone"))
