@@ -1,4 +1,4 @@
-FROM hashicorp/terraform:0.12.2 as dev
+FROM hashicorp/terraform:0.12.2 as builder
 
 ENV GOCACHE /usr/src/terraform-provider-liquidweb/go/.cache
 ENV GOPATH /usr/src/terraform-provider-liquidweb/go

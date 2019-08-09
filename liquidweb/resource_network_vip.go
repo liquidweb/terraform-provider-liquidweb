@@ -63,18 +63,18 @@ func resourceCreateNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	
 	result, err := config.LWAPI.NetworkVIP.Create(opts)
 	if err != nil {
+		sp.SetTag("error", "true")
 		sp.LogFields(opentracinglog.String("error", err.Error()))
 		return err
 	}
 
 	if result.HasError() {
+			sp.SetTag("error", "true")
 			sp.LogFields(
 				opentracinglog.String("error", result.Error()),
 			)
 		return result
 	}
-
-	sp.Finish()
 
 	d.SetId(result.UniqID)
 	d.Set("zone", d.Get("zone"))
@@ -103,9 +103,16 @@ func resourceReadNetworkVIP(d *schema.ResourceData, m interface{}) error {
 
 func resourceDeleteNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
+	tracer := opentracing.GlobalTracer()
+	sp := tracer.StartSpan("destroy-network-vip")
+	defer sp.Finish()
 
 	deleteResponse := config.LWAPI.NetworkVIP.Destroy(d.Id())
 	if deleteResponse.HasError() {
+		sp.SetTag("error", "true")
+		sp.LogFields(
+			opentracinglog.String("error", deleteResponse.Error()),
+		)
 		return deleteResponse
 	}
 

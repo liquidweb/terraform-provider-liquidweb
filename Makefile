@@ -4,7 +4,7 @@ dev_image=${image}:dev
 mount=-v ${PWD}:/usr/src/terraform-provider-liquidweb
 network_name=terraform-provider-liquidweb
 network=--network ${network_name}
-jaeger_host=-e JAEGER_AGENT_HOST=jaeger -e JAEGER_AGENT_PORT=6831 -e JAEGER_ENDPOINT=http://jaeger:14268/api/traces
+jaeger_host=-e JAEGER_AGENT_HOST=jaeger -e JAEGER_AGENT_PORT=6831
 
 uid=$(shell id -u)
 gid=$(shell id -g)
