@@ -2,10 +2,10 @@ package liquidweb
 
 import (
 	"strings"
+
 	network "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
 	opentracing "github.com/opentracing/opentracing-go"
-	opentracinglog "github.com/opentracing/opentracing-go/log"
 )
 
 func resourceNetworkVIP() *schema.Resource {
@@ -56,25 +56,21 @@ func resourceNetworkVIP() *schema.Resource {
 func resourceCreateNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	opts := buildNetworkVIPOpts(d, m)
 	config := m.(*Config)
-	
+
 	tracer := opentracing.GlobalTracer()
 	sp := tracer.StartSpan("create-network-vip")
-	defer sp.Finish()
-	
+
 	result, err := config.LWAPI.NetworkVIP.Create(opts)
 	if err != nil {
-		sp.SetTag("error", "true")
-		sp.LogFields(opentracinglog.String("error", err.Error()))
+		traceError(sp, err)
 		return err
 	}
 
 	if result.HasError() {
-			sp.SetTag("error", "true")
-			sp.LogFields(
-				opentracinglog.String("error", result.Error()),
-			)
+		traceError(sp, result)
 		return result
 	}
+	sp.Finish()
 
 	d.SetId(result.UniqID)
 	d.Set("zone", d.Get("zone"))
@@ -105,16 +101,13 @@ func resourceDeleteNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
 	tracer := opentracing.GlobalTracer()
 	sp := tracer.StartSpan("destroy-network-vip")
-	defer sp.Finish()
 
 	deleteResponse := config.LWAPI.NetworkVIP.Destroy(d.Id())
 	if deleteResponse.HasError() {
-		sp.SetTag("error", "true")
-		sp.LogFields(
-			opentracinglog.String("error", deleteResponse.Error()),
-		)
+		traceError(sp, deleteResponse)
 		return deleteResponse
 	}
+	sp.Finish()
 
 	return nil
 }

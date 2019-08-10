@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	lwapi "github.com/liquidweb/go-lwApi"
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 var stormServerFields = []string{
@@ -172,8 +173,13 @@ func resourceStormServer() *schema.Resource {
 func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 	opts := buildCreateStormServerOpts(d, m)
 	config := m.(*Config)
+
+	tracer := opentracing.GlobalTracer()
+	sp := tracer.StartSpan("create-storm-server")
+
 	rawr, err := config.Client.Call("v1/Storm/Server/create", opts)
 	if err != nil {
+		traceError(sp, err)
 		return err
 	}
 	resp := rawr.(map[string]interface{})
@@ -191,10 +197,14 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 	}
 	// https://godoc.org/github.com/hashicorp/terraform/helper/resource#StateRefreshFunc
 	// we need to figure out why returning the updated instance isn't updating the server state. Added a call to update at the end of the refresh just for good measure for now.
+	statusSpan := opentracing.StartSpan("status-storm-server", opentracing.ChildOf(sp.Context()))
 	_, err = stateChange.WaitForState()
 	if err != nil {
+		traceError(statusSpan, err)
 		return err
 	}
+	statusSpan.Finish()
+	sp.Finish()
 
 	return resourceReadStormServer(d, m)
 }
@@ -248,6 +258,9 @@ func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 	uid := d.Id()
 	opts := make(map[string]interface{})
 	opts["uniq_id"] = uid
+	tracer := opentracing.GlobalTracer()
+	sp := tracer.StartSpan("destroy-storm-server")
+
 	_, err := config.Client.Call("v1/Storm/Server/destroy", opts)
 	if err != nil {
 		return err
@@ -262,12 +275,16 @@ func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 		NotFoundChecks: 240,
 		MinTimeout:     5 * time.Second,
 	}
+	statusSpan := opentracing.StartSpan("status-storm-server", opentracing.ChildOf(sp.Context()))
 	_, err = stateChange.WaitForState()
 	if err != nil {
+		traceError(statusSpan, err)
 		return fmt.Errorf(
 			"Error waiting for instance (%s) to be destroyed: %s", uid, err)
 	}
 
+	statusSpan.Finish()
+	sp.Finish()
 	return nil
 }
 

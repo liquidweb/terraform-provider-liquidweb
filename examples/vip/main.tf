@@ -18,3 +18,4 @@ output "vip_names" {
 
 output "vip_ips" {
   value = join(",", liquidweb_network_vip.new_vip.*.ip)
+}
