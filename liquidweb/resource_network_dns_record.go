@@ -2,6 +2,7 @@ package liquidweb
 
 import (
 	"strconv"
+	"strings"
 
 	network "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -134,6 +135,10 @@ func resourceReadNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
 	dnsRecord, err := config.LWAPI.NetworkDNS.Details(id)
 	if err != nil {
+		if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 

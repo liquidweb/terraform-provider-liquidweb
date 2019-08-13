@@ -76,6 +76,8 @@ git.liquidweb.com/masre/liquidweb-go v1.5.1-0.20190813164241-ee372f03b4ad h1:t1k
 git.liquidweb.com/masre/liquidweb-go v1.5.1-0.20190813164241-ee372f03b4ad/go.mod h1:2JaxMb9AiEBt16Ed0+oJRuxnivD05MC83+oVNps7PU8=
 git.liquidweb.com/masre/liquidweb-go v1.5.1-0.20190813164442-b887af7a9813 h1:DHWMXgXlHqHdG2EPl0iQJ1v5+rDhxokec7SKWMO/kRk=
 git.liquidweb.com/masre/liquidweb-go v1.5.1-0.20190813164442-b887af7a9813/go.mod h1:2JaxMb9AiEBt16Ed0+oJRuxnivD05MC83+oVNps7PU8=
+git.liquidweb.com/masre/liquidweb-go v1.5.1-0.20190813165625-a804f15ea002 h1:47MYB8d/ESyV/AMZ9rzWjuJi85cA1aVnewX4ohlcCCY=
+git.liquidweb.com/masre/liquidweb-go v1.5.1-0.20190813165625-a804f15ea002/go.mod h1:2JaxMb9AiEBt16Ed0+oJRuxnivD05MC83+oVNps7PU8=
 github.com/Azure/azure-sdk-for-go v21.3.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/go-autorest v10.15.4+incompatible/go.mod h1:r+4oMnoxhatjLLJ6zxSWATqVooLgysK6ZNox3g/xq24=
 github.com/Azure/go-ntlmssp v0.0.0-20180810175552-4a21cbd618b4/go.mod h1:chxPXzSsl7ZWRAuOIE23GDNzjWuZquvFlgA8xmpunjU=

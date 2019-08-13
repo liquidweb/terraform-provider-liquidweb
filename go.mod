@@ -1,6 +1,6 @@
 module git.liquidweb.com/masre/terraform-provider-liquidweb
 
-replace git.liquidweb.com/masre/liquidweb-go => git.liquidweb.com/masre/liquidweb-go v1.5.1-0.20190813164442-b887af7a9813
+replace git.liquidweb.com/masre/liquidweb-go => git.liquidweb.com/masre/liquidweb-go v1.5.1-0.20190813165625-a804f15ea002
 
 require (
 	git.liquidweb.com/masre/liquidweb-go v1.5.0
