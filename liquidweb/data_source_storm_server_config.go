@@ -89,10 +89,6 @@ func dataSourceLWStormServerConfigRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	if result.HasError() {
-		return result
-	}
-
 	// Filter list based on various criteria.
 	filteredConfigs := filterLWStormConfigs(result, d)
 	log.Printf("blars: %+v", filteredConfigs)

@@ -66,10 +66,6 @@ func resourceCreateNetworkVIP(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if result.HasError() {
-		traceError(sp, result)
-		return result
-	}
 	sp.Finish()
 
 	d.SetId(result.UniqID)
@@ -80,19 +76,19 @@ func resourceCreateNetworkVIP(d *schema.ResourceData, m interface{}) error {
 
 func resourceReadNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	vipItem := VIPDetails(config, d.Id())
+	vip, err := config.LWAPI.NetworkVIP.Details(d.Id())
 
-	if vipItem.HasError() {
+	if err != nil {
 		// If VIP was destroyed outside of Terraform, set id to nil value and return nil.
-		if strings.Contains(vipItem.Error(), "LW::Exception::RecordNotFound") {
+		if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
 			d.SetId("")
 			return nil
 		}
 
-		return vipItem
+		return err
 	}
 
-	updateVIPResource(d, vipItem)
+	updateVIPResource(d, vip)
 
 	return nil
 }
@@ -102,10 +98,10 @@ func resourceDeleteNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	tracer := opentracing.GlobalTracer()
 	sp := tracer.StartSpan("destroy-network-vip")
 
-	deleteResponse := config.LWAPI.NetworkVIP.Destroy(d.Id())
-	if deleteResponse.HasError() {
-		traceError(sp, deleteResponse)
-		return deleteResponse
+	deleteResponse, err := config.LWAPI.NetworkVIP.Destroy(d.Id())
+	if err != nil {
+		traceError(sp, err)
+		return err
 	}
 	sp.Finish()
 
@@ -122,13 +118,8 @@ func buildNetworkVIPOpts(d *schema.ResourceData, m interface{}) network.VIPParam
 	return params
 }
 
-// VIPDetails gets a VIP's details from the API.
-func VIPDetails(config *Config, id string) *network.VIPItem {
-	return config.LWAPI.NetworkVIP.Details(id)
-}
-
 // updateVIPResource updates the resource data for the VIP.
-func updateVIPResource(d *schema.ResourceData, dr *network.VIPItem) {
+func updateVIPResource(d *schema.ResourceData, dr *network.VIP) {
 	d.Set("domain", dr.Domain)
 	d.Set("active", dr.Active)
 	d.Set("activeStatus", dr.ActiveStatus)

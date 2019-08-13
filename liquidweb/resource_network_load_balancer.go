@@ -95,10 +95,6 @@ func resourceCreateNetworkLoadBalancer(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	if result.HasError() {
-		return result
-	}
-
 	d.SetId(result.UniqID)
 
 	return resourceReadNetworkLoadBalancer(d, m)
@@ -106,12 +102,12 @@ func resourceCreateNetworkLoadBalancer(d *schema.ResourceData, m interface{}) er
 
 func resourceReadNetworkLoadBalancer(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	loadBalancerItem := loadBalancerDetails(config, d.Id())
-	if loadBalancerItem.HasError() {
-		return loadBalancerItem
+	loadBalancer, err := config.LWAPI.NetworkLoadBalancer.Details(d.Id())
+	if err != nil {
+		return err
 	}
 
-	updateLoadBalancerResource(d, loadBalancerItem)
+	updateLoadBalancerResource(d, loadBalancer)
 	return nil
 }
 
@@ -119,20 +115,20 @@ func resourceUpdateNetworkLoadBalancer(d *schema.ResourceData, m interface{}) er
 	opts := buildNetworkLoadBalancerUpdateOpts(d, m)
 	config := m.(*Config)
 
-	loadBalancerItem := config.LWAPI.NetworkLoadBalancer.Update(opts)
-	if loadBalancerItem.HasError() {
-		return loadBalancerItem
+	loadBalancer, err := config.LWAPI.NetworkLoadBalancer.Update(opts)
+	if err != nil {
+		return err
 	}
 
-	updateLoadBalancerResource(d, loadBalancerItem)
+	updateLoadBalancerResource(d, loadBalancer)
 	return nil
 }
 
 func resourceDeleteNetworkLoadBalancer(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	deleteResponse := config.LWAPI.NetworkLoadBalancer.Delete(d.Id())
-	if deleteResponse.HasError() {
-		return deleteResponse
+	_, err := config.LWAPI.NetworkLoadBalancer.Delete(d.Id())
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -176,13 +172,8 @@ func buildNetworkLoadBalancerUpdateOpts(d *schema.ResourceData, m interface{}) n
 	return params
 }
 
-// loadBalancerDetails gets a load balancer's details from the API.
-func loadBalancerDetails(config *Config, id string) *network.LoadBalancerItem {
-	return config.LWAPI.NetworkLoadBalancer.Details(id)
-}
-
 // updateLoadBalancerResource updates the resource data for the load balancer.
-func updateLoadBalancerResource(d *schema.ResourceData, lb *network.LoadBalancerItem) {
+func updateLoadBalancerResource(d *schema.ResourceData, lb *network.LoadBalancer) {
 	d.Set("name", lb.Name)
 	d.Set("nodes", lb.Nodes)
 	d.Set("region", lb.RegionID)
