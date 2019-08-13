@@ -1,6 +1,8 @@
 package liquidweb
 
 import (
+	"strings"
+
 	network "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -30,7 +32,7 @@ func resourceNetworkLoadBalancer() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"services": &schema.Schema{
+			"service": &schema.Schema{
 				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Resource{
@@ -104,6 +106,10 @@ func resourceReadNetworkLoadBalancer(d *schema.ResourceData, m interface{}) erro
 	config := m.(*Config)
 	loadBalancer, err := config.LWAPI.NetworkLoadBalancer.Details(d.Id())
 	if err != nil {
+		if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
@@ -130,6 +136,7 @@ func resourceDeleteNetworkLoadBalancer(d *schema.ResourceData, m interface{}) er
 	if err != nil {
 		return err
 	}
+	d.SetId("")
 
 	return nil
 }
@@ -140,7 +147,7 @@ func buildNetworkLoadBalancerOpts(d *schema.ResourceData, m interface{}) network
 		Name:               d.Get("name").(string),
 		Nodes:              expandSetToStrings(d.Get("nodes").(*schema.Set).List()),
 		Region:             d.Get("region").(int),
-		Services:           expandServicesSet(d.Get("services").(*schema.Set).List()),
+		Services:           expandServicesSet(d.Get("service").(*schema.Set).List()),
 		SessionPersistence: d.Get("session_persistence").(bool),
 		SSLCert:            d.Get("ssl_cert").(string),
 		SSLIncludes:        d.Get("ssl_includes").(bool),

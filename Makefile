@@ -33,7 +33,7 @@ install:
 	go install
 
 dev_image:
-	docker build --target builder -t ${dev_image} .
+	docker build --target builder --build-arg uid=${uid} -t ${dev_image} .
 
 shell: dev_image network
 	docker run -it --rm --name terraform-provider-liquidweb ${run_as} ${jaeger_host} ${network} ${mount} --entrypoint sh ${dev_image}
