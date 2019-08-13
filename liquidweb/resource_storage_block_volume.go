@@ -1,6 +1,8 @@
 package liquidweb
 
 import (
+	"strings"
+
 	storage "git.liquidweb.com/masre/liquidweb-go/storage"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -57,10 +59,6 @@ func resourceStorageBlockVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"uniq_id": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
 			"zone": &schema.Schema{
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -94,6 +92,10 @@ func resourceReadBlockVolume(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
 	blockVolume, err := config.LWAPI.StorageBlockVolume.Details(d.Id())
 	if err != nil {
+		if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
@@ -136,12 +138,12 @@ func resourceUpdateBlockVolume(d *schema.ResourceData, m interface{}) error {
 
 func resourceDeleteBlockVolume(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	params := &storage.BlockVolumeParams{UniqID: d.Id()}
 
-	_, err := config.LWAPI.StorageBlockVolume.Delete(params)
+	_, err := config.LWAPI.StorageBlockVolume.Delete(d.Id())
 	if err != nil {
 		return err
 	}
+	d.SetId("")
 
 	return nil
 }

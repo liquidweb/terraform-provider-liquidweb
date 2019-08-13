@@ -7,7 +7,7 @@ provider "liquidweb" {
 }
 
 resource "liquidweb_storage_block_volume" "testing_some_space_balls" {
-  attach = "2GHUN4"
+  attach = "TLFA7N"
   domain = "spaceballz44"
   size   = 10
 }
