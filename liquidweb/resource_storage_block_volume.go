@@ -113,7 +113,7 @@ func resourceUpdateBlockVolume(d *schema.ResourceData, m interface{}) error {
 			UniqID:  d.Id(),
 		}
 
-		blockVolumeResize, err := config.LWAPI.StorageBlockVolume.Resize(resizeOpts)
+		_, err := config.LWAPI.StorageBlockVolume.Resize(resizeOpts)
 		if err != nil {
 			return err
 		}
@@ -138,7 +138,7 @@ func resourceDeleteBlockVolume(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
 	params := &storage.BlockVolumeParams{UniqID: d.Id()}
 
-	deleteResponse, err := config.LWAPI.StorageBlockVolume.Delete(params)
+	_, err := config.LWAPI.StorageBlockVolume.Delete(params)
 	if err != nil {
 		return err
 	}

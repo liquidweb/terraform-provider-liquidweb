@@ -98,7 +98,7 @@ func resourceDeleteNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	tracer := opentracing.GlobalTracer()
 	sp := tracer.StartSpan("destroy-network-vip")
 
-	deleteResponse, err := config.LWAPI.NetworkVIP.Destroy(d.Id())
+	_, err := config.LWAPI.NetworkVIP.Destroy(d.Id())
 	if err != nil {
 		traceError(sp, err)
 		return err

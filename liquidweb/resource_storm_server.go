@@ -274,7 +274,7 @@ func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 // refreshDestroyStormServerStatus queries the API for the status of the server destroy.
 func refreshDestroyStormServerStatus(config *Config, uid string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		result, err := config.LWAPI.StormServer.Status(uid)
+		_, err := config.LWAPI.StormServer.Status(uid)
 		if err != nil {
 			if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
 				return nil, "destroyed", nil
