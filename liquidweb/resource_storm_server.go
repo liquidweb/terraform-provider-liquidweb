@@ -2,7 +2,6 @@ package liquidweb
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -271,13 +270,11 @@ func refreshDestroyStormServerStatus(config *Config, uid string) resource.StateR
 	return func() (interface{}, string, error) {
 		s, err := config.LWAPI.StormServer.Status(uid)
 		if err != nil {
-			log.Printf("checking destruction: status: %v err: %v", s, err.Error())
 			if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
-				return nil, "destroyed", nil
+				return s, "destroyed", nil
 			}
 			return nil, "", err
 		}
-		log.Printf("checking destruction: status: %v", s)
 
 		return nil, "pending destruction", nil
 	}
