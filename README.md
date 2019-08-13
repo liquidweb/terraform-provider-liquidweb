@@ -30,7 +30,7 @@ There are also `devplan` and `devapply` make tasks that will do a build and subs
 
 In the `examples` directory there are Terraform projects illustrating how to create various resources. There are a handful of Make tasks that are helpful:
 
-- `EXAMPLE=./examples/storm_servers make key` -- create a new SSH key to provision Storm Servers with (only relevant for the storm server example).
+- `EXAMPLE=./examples/storm_servers make key` -- create a new SSH key to provision Storm Servers with (only relevant for the storm server and load balancer example).
 - `EXAMPLE=./examples/storm_servers make devplan` -- build, init and plan.
 - `EXAMPLE=./examples/storm_servers make devapply` -- build, init and apply cycle to create resources.
 - `EXAMPLE=./examples/storm_servers make destroy` -- destroy resources.
@@ -38,15 +38,59 @@ In the `examples` directory there are Terraform projects illustrating how to cre
 #### Storm Servers
 
 ```terraform
+data "liquidweb_network_zone" "testing" {
+  name        = "Zone C"
+  region_name = "US Central"
+}
+
 resource "liquidweb_storm_server" "testing" {
   count = 1
 
   config_id      = 1090
-  zone           = "${data.liquidweb_network_zone.api.id}"
+  zone           = data.liquidweb_network_zone.testing.id
   template       = "UBUNTU_1804_UNMANAGED"                     // ubuntu 18.04
   domain         = "terraform-testing.api.${count.index}.masre.net"
   password       = "11111aA"
-  public_ssh_key = "${file("./devkey.pub")}"
+  public_ssh_key = file("./devkey.pub")
+}
+```
+
+#### Storm Servers + Load Balancer
+
+```terraform
+data "liquidweb_network_zone" "testing" {
+  name        = "Zone C"
+  region_name = "US Central"
+}
+
+resource "liquidweb_storm_server" "testing" {
+  count = 1
+
+  config_id      = 1090
+  zone           = data.liquidweb_network_zone.testing.id
+  template       = "UBUNTU_1804_UNMANAGED"                     // ubuntu 18.04
+  domain         = "terraform-testing.api.${count.index}.masre.net"
+  password       = "11111aA"
+  public_ssh_key = file("./devkey.pub")
+}
+
+resource "liquidweb_network_load_balancer" "testing" {
+  name       = "testing"
+  region = data.liquidweb_network_zone.testing.region_id
+
+  nodes = liquidweb_storm_server.testing[*].ip
+
+  service {
+    src_port  = 80
+    dest_port = 80
+  }
+
+  service {
+    src_port  = 1337
+    dest_port = 1337
+  }
+
+  strategy = "roundrobin"
 }
 ```
 
@@ -62,7 +106,7 @@ data "liquidweb_storm_server_config" "testing" {
   vcpu         = 2
   memory       = "2000"
   disk         = "100"
-  network_zone = "${data.liquidweb_network_zone.testing.id}"
+  network_zone = data.liquidweb_network_zone.testing.id
 }
 ```
 
