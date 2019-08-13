@@ -3,7 +3,7 @@ variable "liquidweb_config_path" {
 }
 
 provider "liquidweb" {
-  config_path = "${var.liquidweb_config_path}"
+  config_path = var.liquidweb_config_path
 }
 
 resource "liquidweb_network_vip" "new_vip" {

@@ -3,7 +3,7 @@ variable "liquidweb_config_path" {
 }
 
 provider "liquidweb" {
-  config_path = "${var.liquidweb_config_path}"
+  config_path = var.liquidweb_config_path
 }
 
 resource "liquidweb_storage_block_volume" "testing_some_space_balls" {
@@ -13,5 +13,5 @@ resource "liquidweb_storage_block_volume" "testing_some_space_balls" {
 }
 
 output "space_balls" {
-  value = "${liquidweb_storage_block_volume.testing_some_space_balls.domain}"
+  value = liquidweb_storage_block_volume.testing_some_space_balls.domain
 }
