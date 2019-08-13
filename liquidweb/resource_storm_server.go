@@ -109,10 +109,6 @@ func resourceStormServer() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"uniq_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"vcpu": &schema.Schema{
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -188,7 +184,6 @@ func resourceReadStormServer(d *schema.ResourceData, m interface{}) error {
 		}
 		return err
 	}
-
 	updateStormServerResource(d, result)
 
 	return nil
@@ -276,6 +271,7 @@ func refreshDestroyStormServerStatus(config *Config, uid string) resource.StateR
 	return func() (interface{}, string, error) {
 		_, err := config.LWAPI.StormServer.Status(uid)
 		if err != nil {
+			log.Printf("checking destruction: %v", err)
 			if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
 				return nil, "destroyed", nil
 			}
@@ -296,11 +292,8 @@ func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
 		}
 
 		if len(result.Status) == 0 {
-			log.Printf("no status returned, resp %+v", result)
 			return nil, "NotReady", nil
 		}
-
-		log.Printf("status returned: %v", result.Status)
 
 		// Get server details if it's running.
 		if result.Status == "Running" {
@@ -336,7 +329,7 @@ func updateStormServerResource(d *schema.ResourceData, server *storm.Server) {
 	d.Set("config_description", server.ConfigDescription)
 	d.Set("config_id", server.ConfigID)
 	d.Set("domain", server.Domain)
-	d.Set("ip", server.IP)
+	d.Set("ip", server.IP.String())
 	d.Set("ip_count", server.IPCount)
 	d.Set("manage_level", server.ManageLevel)
 	d.Set("memory", server.Memory)
