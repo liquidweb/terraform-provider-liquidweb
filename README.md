@@ -26,6 +26,23 @@ The following run inside the development shell:
 
 There are also `devplan` and `devapply` make tasks that will do a build and subsequent init followed by plan/apply.
 
+## Tracing
+
+Tracing via Jaeger is available so various actions: successful API patterns, bottlenecks and problems can be identified recognized accordingly. It's important to capture where we're getting things right as much as wrong.
+
+```shell
+make jaeger
+xdg-open http://localhost:16686/search
+```
+
+In the development container:
+
+```shell
+JAEGER_DISABLED=false EXAMPLE=./examples/storm_servers make apply
+```
+
+Tracing is enabled if `JAEGER_DISABLED` is set to `false`. This requires the `jaeger` container to be running and general use with an external Terraform project isn't yet supported.
+
 ## Examples
 
 In the `examples` directory there are Terraform projects illustrating how to create various resources. There are a handful of Make tasks that are helpful:
