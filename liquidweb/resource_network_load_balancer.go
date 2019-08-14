@@ -1,6 +1,8 @@
 package liquidweb
 
 import (
+	"strings"
+
 	network "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -30,7 +32,7 @@ func resourceNetworkLoadBalancer() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"services": &schema.Schema{
+			"service": &schema.Schema{
 				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Resource{
@@ -95,10 +97,6 @@ func resourceCreateNetworkLoadBalancer(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	if result.HasError() {
-		return result
-	}
-
 	d.SetId(result.UniqID)
 
 	return resourceReadNetworkLoadBalancer(d, m)
@@ -106,12 +104,16 @@ func resourceCreateNetworkLoadBalancer(d *schema.ResourceData, m interface{}) er
 
 func resourceReadNetworkLoadBalancer(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	loadBalancerItem := loadBalancerDetails(config, d.Id())
-	if loadBalancerItem.HasError() {
-		return loadBalancerItem
+	loadBalancer, err := config.LWAPI.NetworkLoadBalancer.Details(d.Id())
+	if err != nil {
+		if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
+			d.SetId("")
+			return nil
+		}
+		return err
 	}
 
-	updateLoadBalancerResource(d, loadBalancerItem)
+	updateLoadBalancerResource(d, loadBalancer)
 	return nil
 }
 
@@ -119,21 +121,22 @@ func resourceUpdateNetworkLoadBalancer(d *schema.ResourceData, m interface{}) er
 	opts := buildNetworkLoadBalancerUpdateOpts(d, m)
 	config := m.(*Config)
 
-	loadBalancerItem := config.LWAPI.NetworkLoadBalancer.Update(opts)
-	if loadBalancerItem.HasError() {
-		return loadBalancerItem
+	loadBalancer, err := config.LWAPI.NetworkLoadBalancer.Update(opts)
+	if err != nil {
+		return err
 	}
 
-	updateLoadBalancerResource(d, loadBalancerItem)
+	updateLoadBalancerResource(d, loadBalancer)
 	return nil
 }
 
 func resourceDeleteNetworkLoadBalancer(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	deleteResponse := config.LWAPI.NetworkLoadBalancer.Delete(d.Id())
-	if deleteResponse.HasError() {
-		return deleteResponse
+	_, err := config.LWAPI.NetworkLoadBalancer.Delete(d.Id())
+	if err != nil {
+		return err
 	}
+	d.SetId("")
 
 	return nil
 }
@@ -144,7 +147,7 @@ func buildNetworkLoadBalancerOpts(d *schema.ResourceData, m interface{}) network
 		Name:               d.Get("name").(string),
 		Nodes:              expandSetToStrings(d.Get("nodes").(*schema.Set).List()),
 		Region:             d.Get("region").(int),
-		Services:           expandServicesSet(d.Get("services").(*schema.Set).List()),
+		Services:           expandServicesSet(d.Get("service").(*schema.Set).List()),
 		SessionPersistence: d.Get("session_persistence").(bool),
 		SSLCert:            d.Get("ssl_cert").(string),
 		SSLIncludes:        d.Get("ssl_includes").(bool),
@@ -176,13 +179,8 @@ func buildNetworkLoadBalancerUpdateOpts(d *schema.ResourceData, m interface{}) n
 	return params
 }
 
-// loadBalancerDetails gets a load balancer's details from the API.
-func loadBalancerDetails(config *Config, id string) *network.LoadBalancerItem {
-	return config.LWAPI.NetworkLoadBalancer.Details(id)
-}
-
 // updateLoadBalancerResource updates the resource data for the load balancer.
-func updateLoadBalancerResource(d *schema.ResourceData, lb *network.LoadBalancerItem) {
+func updateLoadBalancerResource(d *schema.ResourceData, lb *network.LoadBalancer) {
 	d.Set("name", lb.Name)
 	d.Set("nodes", lb.Nodes)
 	d.Set("region", lb.RegionID)

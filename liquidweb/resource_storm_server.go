@@ -2,62 +2,15 @@ package liquidweb
 
 import (
 	"fmt"
-	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	lwapi "github.com/liquidweb/go-lwApi"
+	opentracing "github.com/opentracing/opentracing-go"
+
+	"git.liquidweb.com/masre/liquidweb-go/storm"
 )
-
-var stormServerFields = []string{
-	"accnt",
-	"active",
-	"backup_enabled",
-	"backup_plan",
-	"backup_quota",
-	"backup_size",
-	"bandwidth_quota",
-	"config_description",
-	"config_id",
-	"create_date",
-	"diskspace",
-	"domain",
-	"ip",
-	"ip_count",
-	"manage_level",
-	"memory",
-	"template",
-	"template_description",
-	"type",
-	"uniq_id",
-	"vcpu",
-	"zone",
-}
-
-var stormServerStates = []string{
-	"Building",
-	"Cloning",
-	"Resizing",
-	"Moving",
-	"Booting",
-	"Stopping",
-	"Restarting",
-	"Rebooting",
-	"Shutting Down",
-	"Restoring Backup",
-	"Creating Image",
-	"Deleting Image",
-	"Restoring Image",
-	"Re-Imaging",
-	"Updating Firewall",
-	"Updating Network",
-	"Adding IPs",
-	"Removing IP",
-	"Provisioning",
-	"Shutdown",
-	"NotReady",
-}
 
 func resourceStormServer() *schema.Resource {
 	return &schema.Resource{
@@ -77,15 +30,17 @@ func resourceStormServer() *schema.Resource {
 			},
 			"backup_enabled": &schema.Schema{
 				Type:     schema.TypeInt,
+				Computed: true,
 				Optional: true,
 			},
 			"backup_plan": &schema.Schema{
 				Type:     schema.TypeString,
+				Computed: true,
 				Optional: true,
-				Default:  "none",
 			},
 			"backup_quota": &schema.Schema{
 				Type:     schema.TypeInt,
+				Computed: true,
 				Optional: true,
 			},
 			"backup_size": &schema.Schema{
@@ -93,7 +48,8 @@ func resourceStormServer() *schema.Resource {
 				Computed: true,
 			},
 			"bandwidth_quota": &schema.Schema{
-				Type:     schema.TypeInt,
+				Type:     schema.TypeString,
+				Computed: true,
 				Optional: true,
 			},
 			"config_description": &schema.Schema{
@@ -145,14 +101,10 @@ func resourceStormServer() *schema.Resource {
 				ForceNew: true,
 			},
 			"template_description": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"type": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"uniq_id": &schema.Schema{
+			"type": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -170,126 +122,7 @@ func resourceStormServer() *schema.Resource {
 }
 
 func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
-	opts := buildCreateStormServerOpts(d, m)
-	config := m.(*Config)
-	rawr, err := config.Client.Call("v1/Storm/Server/create", opts)
-	if err != nil {
-		return err
-	}
-	resp := rawr.(map[string]interface{})
-	uid := resp["uniq_id"].(string)
-	d.SetId(uid)
-
-	stateChange := &resource.StateChangeConf{
-		Delay:          10 * time.Second,
-		Pending:        stormServerStates,
-		Refresh:        refreshStormServer(config, uid),
-		Target:         []string{"Running"},
-		Timeout:        30 * time.Minute,
-		NotFoundChecks: 2,
-		MinTimeout:     5 * time.Second,
-	}
-	// https://godoc.org/github.com/hashicorp/terraform/helper/resource#StateRefreshFunc
-	// we need to figure out why returning the updated instance isn't updating the server state. Added a call to update at the end of the refresh just for good measure for now.
-	_, err = stateChange.WaitForState()
-	if err != nil {
-		return err
-	}
-
-	return resourceReadStormServer(d, m)
-}
-
-func resourceReadStormServer(d *schema.ResourceData, m interface{}) error {
-	uid := d.Id()
-	config := m.(*Config)
-	server, err := stormServerDetails(config, uid)
-	if err != nil {
-		errClass, ok := err.(lwapi.LWAPIError)
-		if ok && errClass.ErrorClass == "LW::Exception::RecordNotFound" {
-			d.SetId("")
-			return nil
-		}
-		return err
-	}
-
-	updateStormServerResource(d, server)
-
-	return nil
-}
-
-func resourceUpdateStormServer(d *schema.ResourceData, m interface{}) error {
-	opts := buildUpdateStormServerOpts(d, m)
-	validOpts := pickStormServerUpdateOpts(opts)
-	config := m.(*Config)
-	_, err := config.Client.Call("v1/Storm/Server/update", validOpts)
-	if err != nil {
-		return err
-	}
-
-	stateChange := &resource.StateChangeConf{
-		Delay:          10 * time.Second,
-		Pending:        stormServerStates,
-		Refresh:        refreshStormServer(config, d.Id()),
-		Target:         []string{"Running"},
-		Timeout:        20 * time.Minute,
-		NotFoundChecks: 240,
-		MinTimeout:     5 * time.Second,
-	}
-	_, err = stateChange.WaitForState()
-	if err != nil {
-		return err
-	}
-
-	return resourceReadStormServer(d, m)
-}
-
-func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
-	config := m.(*Config)
-	uid := d.Id()
-	opts := make(map[string]interface{})
-	opts["uniq_id"] = uid
-	_, err := config.Client.Call("v1/Storm/Server/destroy", opts)
-	if err != nil {
-		return err
-	}
-
-	stateChange := &resource.StateChangeConf{
-		Delay:          10 * time.Second,
-		Pending:        stormServerStates,
-		Refresh:        refreshStormServer(config, d.Id()),
-		Target:         []string{"Destroying"},
-		Timeout:        20 * time.Minute,
-		NotFoundChecks: 240,
-		MinTimeout:     5 * time.Second,
-	}
-	_, err = stateChange.WaitForState()
-	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for instance (%s) to be destroyed: %s", uid, err)
-	}
-
-	return nil
-}
-
-// StormServerOpts are options passed to Storm API calls
-type StormServerOpts struct {
-	BackupEnabled  int
-	BackupPlan     string
-	BackupQuota    int
-	BandwidthQuota int
-	ConfigID       int
-	Domain         string
-	ImageID        int
-	Password       string
-	PublicSSHKey   string
-	Template       string
-	UniqID         string
-	Zone           int
-}
-
-// buildCreateStormServerOpts builds options for a create server API call.
-func buildCreateStormServerOpts(d *schema.ResourceData, m interface{}) map[string]interface{} {
-	so := &StormServerOpts{
+	serverParams := storm.ServerParams{
 		ConfigID:     d.Get("config_id").(int),
 		Domain:       d.Get("domain").(string),
 		ImageID:      d.Get("image_id").(int),
@@ -298,163 +131,209 @@ func buildCreateStormServerOpts(d *schema.ResourceData, m interface{}) map[strin
 		PublicSSHKey: d.Get("public_ssh_key").(string),
 		Zone:         d.Get("zone").(int),
 	}
-	// The Storm API client uses a string map for parameters.
-	var opts = make(map[string]interface{})
-	opts["config_id"] = so.ConfigID
-	opts["domain"] = so.Domain
 
-	// Add Template if provided.
-	if len(so.Template) > 0 {
-		opts["template"] = so.Template
+	config := m.(*Config)
+
+	tracer := opentracing.GlobalTracer()
+	sp := tracer.StartSpan("create-storm-server")
+	defer sp.Finish()
+
+	result, err := config.LWAPI.StormServer.Create(serverParams)
+	if err != nil {
+		traceError(sp, err)
+		return err
 	}
 
-	// Add Image if provided.
-	if so.ImageID != 0 {
-		opts["image_id"] = so.ImageID
+	d.SetId(result.UniqID)
+
+	stateChange := &resource.StateChangeConf{
+		Delay:          10 * time.Second,
+		Pending:        storm.ServerStates,
+		Refresh:        refreshStormServer(config, d.Id()),
+		Target:         []string{"Running"},
+		Timeout:        30 * time.Minute,
+		NotFoundChecks: 2,
+		MinTimeout:     5 * time.Second,
+	}
+	// https://godoc.org/github.com/hashicorp/terraform/helper/resource#StateRefreshFunc
+	// we need to figure out why returning the updated instance isn't updating the server state. Added a call to update at the end of the refresh just for good measure for now.
+	statusSpan := opentracing.StartSpan("status-storm-server", opentracing.ChildOf(sp.Context()))
+	defer statusSpan.Finish()
+
+	_, err = stateChange.WaitForState()
+	if err != nil {
+		traceError(statusSpan, err)
+		return err
 	}
 
-	opts["password"] = so.Password
-	opts["public_ssh_key"] = so.PublicSSHKey
-	opts["template"] = so.Template
-	opts["zone"] = so.Zone
-
-	return opts
+	return resourceReadStormServer(d, m)
 }
 
-// buildUpdateStormServerOpts builds options for an update server API call.
-func buildUpdateStormServerOpts(d *schema.ResourceData, m interface{}) map[string]interface{} {
-	so := &StormServerOpts{
+func resourceReadStormServer(d *schema.ResourceData, m interface{}) error {
+	config := m.(*Config)
+	tracer := opentracing.GlobalTracer()
+	sp := tracer.StartSpan("read-storm-server")
+	defer sp.Finish()
+
+	result, err := config.LWAPI.StormServer.Details(d.Id())
+	if err != nil {
+		if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+	updateStormServerResource(d, result)
+
+	return nil
+}
+
+func resourceUpdateStormServer(d *schema.ResourceData, m interface{}) error {
+	config := m.(*Config)
+	params := storm.ServerParams{
 		BackupEnabled:  d.Get("backup_enabled").(int),
 		BackupPlan:     d.Get("backup_plan").(string),
 		BackupQuota:    d.Get("backup_quota").(int),
-		BandwidthQuota: d.Get("bandwidth_quota").(int),
+		BandwidthQuota: d.Get("bandwidth_quota").(string),
 		Domain:         d.Get("domain").(string),
 		UniqID:         d.Id(),
 	}
-	// The Storm API client uses a string map for parameters.
-	var opts = make(map[string]interface{})
-	opts["backup_enabled"] = so.BackupEnabled
-	if len(so.BackupPlan) > 0 {
-		opts["backup_plan"] = so.BackupPlan
-	}
-	if so.BackupQuota > 0 {
-		opts["backup_quota"] = so.BackupQuota
-	}
-	opts["bandwidth_quota"] = so.BandwidthQuota
-	opts["domain"] = so.Domain
-	opts["uniq_id"] = so.UniqID
+	tracer := opentracing.GlobalTracer()
+	sp := tracer.StartSpan("update-storm-server")
+	defer sp.Finish()
 
-	return opts
+	result, err := config.LWAPI.StormServer.Update(params)
+	if err != nil {
+		return err
+	}
+
+	updateStormServerResource(d, result)
+
+	stateChange := &resource.StateChangeConf{
+		Delay:          10 * time.Second,
+		Pending:        storm.ServerStates,
+		Refresh:        refreshStormServer(config, d.Id()),
+		Target:         []string{"Running"},
+		Timeout:        20 * time.Minute,
+		NotFoundChecks: 240,
+		MinTimeout:     5 * time.Second,
+	}
+	statusSpan := opentracing.StartSpan("status-storm-server", opentracing.ChildOf(sp.Context()))
+	defer statusSpan.Finish()
+
+	server, err := stateChange.WaitForState()
+	if err != nil {
+		return err
+	}
+
+	updateStormServerResource(d, server.(*storm.Server))
+
+	return nil
 }
 
-// pickUpdateOpts returns a set of options valid for an update request.
-func pickStormServerUpdateOpts(opts map[string]interface{}) map[string]interface{} {
-	allowed := [6]string{"backup_enabled", "backup_plan", "backup_quota", "bandwidth_quota", "domain", "uniq_id"}
-	validOpts := make(map[string]interface{})
+func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
+	config := m.(*Config)
+	tracer := opentracing.GlobalTracer()
+	sp := tracer.StartSpan("destroy-storm-server")
+	defer sp.Finish()
 
-	for _, af := range allowed {
-		f, ok := opts[af]
-		if ok {
-			validOpts[af] = f
+	_, err := config.LWAPI.StormServer.Destroy(d.Id())
+	if err != nil {
+		return err
+	}
+
+	stateChange := &resource.StateChangeConf{
+		Delay:          10 * time.Second,
+		Pending:        []string{"pending destruction"},
+		Refresh:        refreshDestroyStormServerStatus(config, d.Id()),
+		Target:         []string{"destroyed"},
+		Timeout:        20 * time.Minute,
+		NotFoundChecks: 240,
+		MinTimeout:     5 * time.Second,
+	}
+	statusSpan := opentracing.StartSpan("status-storm-server", opentracing.ChildOf(sp.Context()))
+	defer statusSpan.Finish()
+
+	_, err = stateChange.WaitForState()
+	if err != nil {
+		traceError(statusSpan, err)
+		return fmt.Errorf(
+			"Error waiting for instance (%s) to be destroyed: %s", d.Id(), err)
+	}
+	d.SetId("")
+
+	return nil
+}
+
+// refreshDestroyStormServerStatus queries the API for the status of the server destroy.
+func refreshDestroyStormServerStatus(config *Config, uid string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		s, err := config.LWAPI.StormServer.Status(uid)
+		if err != nil {
+			if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
+				return s, "destroyed", nil
+			}
+			return nil, "", err
 		}
-	}
 
-	return validOpts
+		return nil, "pending destruction", nil
+	}
 }
 
-// pickDetailsOpts returns a set of options valid for a details request.
-func pickStormServerDetailsOpts(opts map[string]interface{}) map[string]interface{} {
-	allowed := [6]string{"uniq_id"}
-	validOpts := make(map[string]interface{})
-
-	for _, af := range allowed {
-		f, ok := opts[af]
-		if ok {
-			validOpts[af] = f
-		}
-	}
-
-	return validOpts
-}
-
-// refreshStormServer queries the API for status returns the current status.
+// refreshStormServer queries the API for status.
 // If the status is "Running" query for its details and return them.
 func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		opts := make(map[string]interface{})
-		opts["uniq_id"] = uid
-		rawr, err := config.Client.Call("v1/Storm/Server/status", opts)
+		result, err := config.LWAPI.StormServer.Status(uid)
 		if err != nil {
 			return nil, "", err
 		}
-		resp := rawr.(map[string]interface{})
-		status, ok := resp["status"]
-		if !ok {
-			return nil, "", fmt.Errorf("problem getting server status")
-		}
-		state, ok := status.(string)
-		if !ok {
-			log.Printf("resp %+v", resp)
-			return nil, "", fmt.Errorf("no status returned")
-		}
 
-		log.Printf("status returned: %v", state)
+		if len(result.Status) == 0 {
+			return nil, "NotReady", nil
+		}
 
 		// Get server details if it's running.
-		if state == "Running" {
-			rawr, err := stormServerDetails(config, uid)
+		if result.Status == "Running" {
+			details, err := config.LWAPI.StormServer.Details(uid)
 			if err != nil {
 				return nil, "", err
 			}
 
 			// Ensure we have an IP, otherwise return a pseudo-status until it does have an IP.
-			ss := rawr.(map[string]interface{})
-			_, ok := ss["ip"]
-			log.Printf("ip field %t", ok)
-			if !ok {
-				return nil, "NotReady", nil
-			}
-			ip, ok := ss["ip"].(string)
-			log.Printf("ip field a string %t", ok)
-			if !ok {
+			if len(details.IP) == 0 {
 				return nil, "NotReady", nil
 			}
 
-			log.Printf("ip field %s", ip)
-
-			if len(ip) == 0 {
-				return nil, "NotReady", nil
-			}
-
-			return rawr, state, nil
+			return details, result.Status, nil
 		}
 
 		// Return an empty string as if nil is returned the resource will be considered "not found".
 		// See
-		return "", state, nil
+		return "", result.Status, nil
 	}
-}
-
-// serverDetails gets server details from the API.
-func stormServerDetails(config *Config, uid string) (interface{}, error) {
-	opts := make(map[string]interface{})
-	opts["uniq_id"] = uid
-	return config.Client.Call("v1/Storm/Server/details", opts)
 }
 
 // updateStormServerResource updates the resource data for the storm server.
-func updateStormServerResource(d *schema.ResourceData, server interface{}) {
-	ss := server.(map[string]interface{})
-
-	fields := stormServerFields
-
-	for _, field := range fields {
-		f, ok := ss[field]
-		if ok {
-			d.Set(field, f)
-		}
-		if field == "uniq_id" {
-			d.SetId(f.(string))
-		}
-	}
+func updateStormServerResource(d *schema.ResourceData, server *storm.Server) {
+	d.SetId(server.UniqID)
+	d.Set("accnt", server.ACCNT)
+	d.Set("active", server.Active)
+	d.Set("backup_enabled", server.BackupEnabled)
+	d.Set("backup_plan", server.BackupPlan)
+	d.Set("backup_quota", server.BackupQuota)
+	d.Set("backup_size", server.BackupSize)
+	d.Set("bandwidth_quota", server.BandwidthQuota)
+	d.Set("config_description", server.ConfigDescription)
+	d.Set("config_id", server.ConfigID)
+	d.Set("domain", server.Domain)
+	d.Set("ip", server.IP.String())
+	d.Set("ip_count", server.IPCount)
+	d.Set("manage_level", server.ManageLevel)
+	d.Set("memory", server.Memory)
+	d.Set("template", server.Template)
+	d.Set("template_description", server.TemplateDescription)
+	d.Set("type", server.Type)
+	d.Set("vcpu", server.VCPU)
+	d.Set("zone", server.Zone)
 }

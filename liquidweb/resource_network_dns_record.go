@@ -2,6 +2,7 @@ package liquidweb
 
 import (
 	"strconv"
+	"strings"
 
 	network "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -120,10 +121,6 @@ func resourceCreateNetworkDNSRecord(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 
-	if result.HasError() {
-		return result
-	}
-
 	id := strconv.Itoa(int(result.ID))
 	d.SetId(id)
 
@@ -136,12 +133,16 @@ func resourceReadNetworkDNSRecord(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	config := m.(*Config)
-	dnsRecordItem := dnsRecordDetails(config, id)
-	if dnsRecordItem.HasError() {
-		return dnsRecordItem
+	dnsRecord, err := config.LWAPI.NetworkDNS.Details(id)
+	if err != nil {
+		if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
+			d.SetId("")
+			return nil
+		}
+		return err
 	}
 
-	updateDNSRecordResource(d, dnsRecordItem)
+	updateDNSRecordResource(d, dnsRecord)
 	return nil
 }
 
@@ -160,12 +161,12 @@ func resourceUpdateNetworkDNSRecord(d *schema.ResourceData, m interface{}) error
 	opts.Type = ""
 
 	config := m.(*Config)
-	dnsRecordItem := config.LWAPI.NetworkDNS.Update(opts)
-	if dnsRecordItem.HasError() {
-		return dnsRecordItem
+	dnsRecord, err := config.LWAPI.NetworkDNS.Update(opts)
+	if err != nil {
+		return err
 	}
 
-	updateDNSRecordResource(d, dnsRecordItem)
+	updateDNSRecordResource(d, dnsRecord)
 	return nil
 }
 
@@ -177,9 +178,9 @@ func resourceDeleteNetworkDNSRecord(d *schema.ResourceData, m interface{}) error
 	}
 	params := &network.DNSRecordParams{ID: id}
 
-	deleteResponse := config.LWAPI.NetworkDNS.Delete(params)
-	if deleteResponse.HasError() {
-		return deleteResponse
+	_, err = config.LWAPI.NetworkDNS.Delete(params)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -199,13 +200,8 @@ func buildNetworkDNSRecordOpts(d *schema.ResourceData, m interface{}) *network.D
 	return params
 }
 
-// dnsRecordDetails gets a dns record's details from the API.
-func dnsRecordDetails(config *Config, id int) *network.DNSRecordItem {
-	return config.LWAPI.NetworkDNS.Details(id)
-}
-
 // updateDNSRecordResource updates the resource data for the DNS Record.
-func updateDNSRecordResource(d *schema.ResourceData, dr *network.DNSRecordItem) {
+func updateDNSRecordResource(d *schema.ResourceData, dr *network.DNSRecord) {
 	d.Set("admin_email", dr.AdminEmail)
 	d.Set("created", dr.Created)
 	d.Set("exchange", dr.Exchange)

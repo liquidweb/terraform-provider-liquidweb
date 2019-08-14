@@ -1,8 +1,11 @@
 package liquidweb
 
 import (
+	"strings"
+
 	network "git.liquidweb.com/masre/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 func resourceNetworkVIP() *schema.Resource {
@@ -54,14 +57,16 @@ func resourceCreateNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	opts := buildNetworkVIPOpts(d, m)
 	config := m.(*Config)
 
+	tracer := opentracing.GlobalTracer()
+	sp := tracer.StartSpan("create-network-vip")
+
 	result, err := config.LWAPI.NetworkVIP.Create(opts)
 	if err != nil {
+		traceError(sp, err)
 		return err
 	}
 
-	if result.HasError() {
-		return result
-	}
+	sp.Finish()
 
 	d.SetId(result.UniqID)
 	d.Set("zone", d.Get("zone"))
@@ -71,24 +76,34 @@ func resourceCreateNetworkVIP(d *schema.ResourceData, m interface{}) error {
 
 func resourceReadNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	vipItem := VIPDetails(config, d.Id())
+	vip, err := config.LWAPI.NetworkVIP.Details(d.Id())
 
-	if vipItem.HasError() {
-		return vipItem
+	if err != nil {
+		// If VIP was destroyed outside of Terraform, set ID to an empty string so Terraform treats it as destroyed.
+		if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
+			d.SetId("")
+			return nil
+		}
+
+		return err
 	}
 
-	updateVIPResource(d, vipItem)
+	updateVIPResource(d, vip)
 
 	return nil
 }
 
 func resourceDeleteNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
+	tracer := opentracing.GlobalTracer()
+	sp := tracer.StartSpan("destroy-network-vip")
 
-	deleteResponse := config.LWAPI.NetworkVIP.Destroy(d.Id())
-	if deleteResponse.HasError() {
-		return deleteResponse
+	_, err := config.LWAPI.NetworkVIP.Destroy(d.Id())
+	if err != nil {
+		traceError(sp, err)
+		return err
 	}
+	sp.Finish()
 
 	return nil
 }
@@ -103,13 +118,8 @@ func buildNetworkVIPOpts(d *schema.ResourceData, m interface{}) network.VIPParam
 	return params
 }
 
-// VIPDetails gets a VIP's details from the API.
-func VIPDetails(config *Config, id string) *network.VIPItem {
-	return config.LWAPI.NetworkVIP.Details(id)
-}
-
 // updateVIPResource updates the resource data for the VIP.
-func updateVIPResource(d *schema.ResourceData, dr *network.VIPItem) {
+func updateVIPResource(d *schema.ResourceData, dr *network.VIP) {
 	d.Set("domain", dr.Domain)
 	d.Set("active", dr.Active)
 	d.Set("activeStatus", dr.ActiveStatus)

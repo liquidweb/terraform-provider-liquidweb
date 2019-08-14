@@ -1,6 +1,8 @@
 package liquidweb
 
 import (
+	"strings"
+
 	storage "git.liquidweb.com/masre/liquidweb-go/storage"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -57,10 +59,6 @@ func resourceStorageBlockVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"uniq_id": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
 			"zone": &schema.Schema{
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -85,10 +83,6 @@ func resourceCreateBlockVolume(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if result.HasError() {
-		return result
-	}
-
 	d.SetId(result.UniqID)
 
 	return resourceReadBlockVolume(d, m)
@@ -96,12 +90,16 @@ func resourceCreateBlockVolume(d *schema.ResourceData, m interface{}) error {
 
 func resourceReadBlockVolume(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	blockVolumeItem := blockVolumeDetails(config, d.Id())
-	if blockVolumeItem.HasError() {
-		return blockVolumeItem
+	blockVolume, err := config.LWAPI.StorageBlockVolume.Details(d.Id())
+	if err != nil {
+		if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
+			d.SetId("")
+			return nil
+		}
+		return err
 	}
 
-	updateBlockVolumeResource(d, blockVolumeItem)
+	updateBlockVolumeResource(d, blockVolume)
 	return nil
 }
 
@@ -117,9 +115,9 @@ func resourceUpdateBlockVolume(d *schema.ResourceData, m interface{}) error {
 			UniqID:  d.Id(),
 		}
 
-		blockVolumeResize := config.LWAPI.StorageBlockVolume.Resize(resizeOpts)
-		if blockVolumeResize.HasError() {
-			return blockVolumeResize
+		_, err := config.LWAPI.StorageBlockVolume.Resize(resizeOpts)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -129,23 +127,23 @@ func resourceUpdateBlockVolume(d *schema.ResourceData, m interface{}) error {
 		UniqID:      d.Id(),
 	}
 
-	blockVolumeItem := config.LWAPI.StorageBlockVolume.Update(updateOps)
-	if blockVolumeItem.HasError() {
-		return blockVolumeItem
+	blockVolume, err := config.LWAPI.StorageBlockVolume.Update(updateOps)
+	if err != nil {
+		return err
 	}
 
-	updateBlockVolumeResource(d, blockVolumeItem)
+	updateBlockVolumeResource(d, blockVolume)
 	return nil
 }
 
 func resourceDeleteBlockVolume(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	params := &storage.BlockVolumeParams{UniqID: d.Id()}
 
-	deleteResponse := config.LWAPI.StorageBlockVolume.Delete(params)
-	if deleteResponse.HasError() {
-		return deleteResponse
+	_, err := config.LWAPI.StorageBlockVolume.Delete(d.Id())
+	if err != nil {
+		return err
 	}
+	d.SetId("")
 
 	return nil
 }
@@ -164,13 +162,8 @@ func buildBlockVolumeOpts(d *schema.ResourceData, m interface{}) *storage.BlockV
 	return params
 }
 
-// blockVolumeDetails gets a dns record's details from the API.
-func blockVolumeDetails(config *Config, id string) *storage.BlockVolumeItem {
-	return config.LWAPI.StorageBlockVolume.Details(id)
-}
-
 // updateBlockVolumeResource updates the resource data for the DNS Record.
-func updateBlockVolumeResource(d *schema.ResourceData, dr *storage.BlockVolumeItem) {
+func updateBlockVolumeResource(d *schema.ResourceData, dr *storage.BlockVolume) {
 	d.Set("cross_attach", dr.CrossAttach)
 	d.Set("domain", dr.Domain)
 	d.Set("size", dr.Size)
