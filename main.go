@@ -15,31 +15,27 @@ import (
 )
 
 func main() {
-	tracingEnabled := len(os.Getenv("TF_LOG")) > 0
-	log.Printf("Tracing enabled: %t", tracingEnabled)
+	log.Printf("Tracing enabled: %t", os.Getenv("JAEGER_DISABLED") == "false")
 
-	if tracingEnabled {
-
-		cfg, err := jaegercfg.FromEnv()
-		cfg.ServiceName = "terraform-provider-liquidweb"
-		cfg.Sampler = &jaegercfg.SamplerConfig{
-			Type:  jaeger.SamplerTypeConst,
-			Param: 1,
-		}
-
-		jLogger := jaegerlog.StdLogger
-		jMetricsFactory := metrics.NullFactory
-
-		tracer, closer, err := cfg.NewTracer(
-			jaegercfg.Logger(jLogger),
-			jaegercfg.Metrics(jMetricsFactory),
-		)
-		if err != nil {
-			log.Panic(err)
-		}
-		opentracing.SetGlobalTracer(tracer)
-		defer closer.Close()
+	cfg, err := jaegercfg.FromEnv()
+	cfg.ServiceName = "terraform-provider-liquidweb"
+	cfg.Sampler = &jaegercfg.SamplerConfig{
+		Type:  jaeger.SamplerTypeConst,
+		Param: 1,
 	}
+
+	jLogger := jaegerlog.StdLogger
+	jMetricsFactory := metrics.NullFactory
+
+	tracer, closer, err := cfg.NewTracer(
+		jaegercfg.Logger(jLogger),
+		jaegercfg.Metrics(jMetricsFactory),
+	)
+	if err != nil {
+		log.Panic(err)
+	}
+	opentracing.SetGlobalTracer(tracer)
+	defer closer.Close()
 
 	plugin.Serve(&plugin.ServeOpts{
 		ProviderFunc: func() terraform.ResourceProvider {
