@@ -79,7 +79,7 @@ func resourceReadNetworkVIP(d *schema.ResourceData, m interface{}) error {
 	vip, err := config.LWAPI.NetworkVIP.Details(d.Id())
 
 	if err != nil {
-		// If VIP was destroyed outside of Terraform, set id to nil value and return nil.
+		// If VIP was destroyed outside of Terraform, set ID to an empty string so Terraform treats it as destroyed.
 		if strings.Contains(err.Error(), "LW::Exception::RecordNotFound") {
 			d.SetId("")
 			return nil
