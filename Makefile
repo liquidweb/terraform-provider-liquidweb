@@ -1,5 +1,5 @@
 liquidweb_config_path=${PWD}/.lwapi.toml
-image=git.liquidweb.com:4567/masre/terraform-provider-liquidweb
+image=liquidweb/terraform-provider-liquidweb
 dev_image=${image}:dev
 mount=-v ${PWD}:/usr/src/terraform-provider-liquidweb
 network_name=terraform-provider-liquidweb
