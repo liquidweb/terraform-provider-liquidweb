@@ -3,8 +3,7 @@ package main
 import (
 	"log"
 	"os"
-
-	"git.liquidweb.com/masre/terraform-provider-liquidweb/liquidweb"
+	"github.com/liquidweb/terraform-provider-liquidweb/liquidweb"
 	"github.com/hashicorp/terraform/plugin"
 	"github.com/hashicorp/terraform/terraform"
 	opentracing "github.com/opentracing/opentracing-go"

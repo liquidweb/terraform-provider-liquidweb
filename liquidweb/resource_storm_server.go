@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	opentracing "github.com/opentracing/opentracing-go"
 
-	"git.liquidweb.com/masre/liquidweb-go/storm"
+	"github.com/liquidweb/liquidweb-go/storm"
 )
 
 func resourceStormServer() *schema.Resource {

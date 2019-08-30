@@ -3,7 +3,7 @@ package liquidweb
 import (
 	"fmt"
 
-	lwnetwork "git.liquidweb.com/masre/liquidweb-go/network"
+	lwnetwork "github.com/liquidweb/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 

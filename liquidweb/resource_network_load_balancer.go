@@ -3,7 +3,7 @@ package liquidweb
 import (
 	"strings"
 
-	network "git.liquidweb.com/masre/liquidweb-go/network"
+	network "github.com/liquidweb/liquidweb-go/network"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 )

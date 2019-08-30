@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"git.liquidweb.com/masre/liquidweb-go/storm"
+	"github.com/liquidweb/liquidweb-go/storm"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )

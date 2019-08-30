@@ -3,7 +3,7 @@ package liquidweb
 import (
 	"strings"
 
-	storage "git.liquidweb.com/masre/liquidweb-go/storage"
+	storage "github.com/liquidweb/liquidweb-go/storage"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 

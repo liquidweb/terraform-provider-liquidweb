@@ -3,7 +3,7 @@ package liquidweb
 import (
 	"os"
 
-	lwgoapi "git.liquidweb.com/masre/liquidweb-go/client"
+	lwgoapi "github.com/liquidweb/liquidweb-go/client"
 	lwapi "github.com/liquidweb/go-lwApi"
 	"github.com/spf13/viper"
 )
