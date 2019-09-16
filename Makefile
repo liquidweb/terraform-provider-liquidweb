@@ -10,6 +10,8 @@ uid=$(shell id -u)
 gid=$(shell id -g)
 run_as=--user ${uid}:${gid}
 
+default: clean test build
+
 network:
 	docker network create ${network_name} || echo "network ${network_name} already exists"
 
