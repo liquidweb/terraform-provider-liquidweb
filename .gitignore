@@ -9,3 +9,4 @@ terraform-provider-liquidweb
 terraform.tfstate*
 go/
 .cache/
+dist/

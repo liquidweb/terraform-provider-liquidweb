@@ -23,6 +23,9 @@ trace_jaeger:
 build: clean
 	go build -o terraform-provider-liquidweb
 
+test_release:
+	goreleaser --snapshot --skip-publish --rm-dist
+
 clean:
 	rm -f terraform-provider-liquidweb
 
