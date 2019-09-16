@@ -25,7 +25,7 @@ The following run inside the development shell:
 - `EXAMPLE=./examples/storm_servers make plan` -- plan an example project
 - `EXAMPLE=./examples/storm_servers make apply` -- apply an example project
 - `EXAMPLE=./examples/storm_servers make destroy` -- destroy an example project
-- `make testrelease` -- test a release (requires goreleaser to be installed)
+- `make test_release` -- test a release (requires goreleaser to be installed)
 
 There are also `devplan` and `devapply` make tasks that will do a build and subsequent init followed by plan/apply.
 

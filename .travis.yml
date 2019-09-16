@@ -29,7 +29,6 @@ deploy:
     script: curl -sL https://git.io/goreleaser | bash
     on:
       tags: true
-      condition: $TRAVIS_GO_VERSION =~ ^1\.x$
 
   - provider: releases
     api_key: ${GITHUB_TOKEN}
