@@ -18,10 +18,7 @@ env:
 install:
   # needed for the snap pipe:
   - sudo snap install snapcraft --classic
-
-script:
-  - make test
-  - make build
+  - go mod download
 
 deploy:
   - provider: script
