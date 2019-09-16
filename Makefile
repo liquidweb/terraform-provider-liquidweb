@@ -21,7 +21,7 @@ trace_jaeger:
 	sh -c "while [ 1 ]; do nc -ul 5775 < pipe | tee outgoing.log | nc -u jaeger 5775 | tee pipe incoming.log; done"
 
 build: clean
-	go build
+	go build -o terraform-provider-liquidweb
 
 clean:
 	rm -f terraform-provider-liquidweb
