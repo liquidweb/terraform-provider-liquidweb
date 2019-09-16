@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/liquidweb/terraform-provider-liquidweb.svg?branch=master)](https://travis-ci.org/liquidweb/terraform-provider-liquidweb)
+
 # Liquid Web Terraform Provider
 
 ## Developing
