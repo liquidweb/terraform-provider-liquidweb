@@ -20,6 +20,10 @@ install:
   - sudo snap install snapcraft --classic
   - go mod download
 
+script:
+  - git status
+  - git diff
+
 deploy:
   - provider: script
     skip_cleanup: true
