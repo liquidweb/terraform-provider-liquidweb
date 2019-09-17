@@ -10,3 +10,4 @@ terraform.tfstate*
 go/
 .cache/
 dist/
+.ash_history
