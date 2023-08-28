@@ -14,4 +14,4 @@ require (
 	github.com/uber/jaeger-lib v2.0.0+incompatible
 )
 
-go 1.13
+go 1.21
