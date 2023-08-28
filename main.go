@@ -3,9 +3,10 @@ package main
 import (
 	"log"
 	"os"
+
+	"github.com/hashicorp/terraform-plugin-sdk/plugin"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/liquidweb/terraform-provider-liquidweb/liquidweb"
-	"github.com/hashicorp/terraform/plugin"
-	"github.com/hashicorp/terraform/terraform"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"

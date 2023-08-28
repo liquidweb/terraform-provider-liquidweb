@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	opentracing "github.com/opentracing/opentracing-go"
 
 	"github.com/liquidweb/liquidweb-go/storm"

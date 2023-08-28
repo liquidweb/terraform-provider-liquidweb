@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	network "github.com/liquidweb/liquidweb-go/network"
-	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourceNetworkDNSRecord() *schema.Resource {

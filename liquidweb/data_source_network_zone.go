@@ -3,8 +3,8 @@ package liquidweb
 import (
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	lwnetwork "github.com/liquidweb/liquidweb-go/network"
-	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func dataSourceLWNetworkZone() *schema.Resource {
