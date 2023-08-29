@@ -1,7 +1,9 @@
 package liquidweb
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -131,6 +133,12 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 		PublicSSHKey: d.Get("public_ssh_key").(string),
 		Zone:         d.Get("zone").(int),
 	}
+
+	reqData, err := json.Marshal(serverParams)
+	if err != nil {
+		return err
+	}
+	log.Printf("creating server with params: %s\n", string(reqData))
 
 	config := m.(*Config)
 
