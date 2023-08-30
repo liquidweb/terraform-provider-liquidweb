@@ -8,7 +8,7 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 )
 
-func resourceNetworkVIP() *schema.Resource {
+func resourceFloatingIP() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceCreateNetworkVIP,
 		Read:   resourceReadNetworkVIP,

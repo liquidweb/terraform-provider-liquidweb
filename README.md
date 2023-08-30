@@ -12,7 +12,7 @@ Dependencies:
 [lwApi]
 username = "[yourusername]"
 password = "[yourpassword]"
-url = "https://api.stormondemand.com"
+url = "https://api.liquidweb.com"
 timeout = 15
 ```
 
@@ -55,7 +55,7 @@ In the `examples` directory there are Terraform projects illustrating how to cre
 - `EXAMPLE=./examples/storm_servers make devapply` -- build, init and apply cycle to create resources.
 - `EXAMPLE=./examples/storm_servers make destroy` -- destroy resources.
 
-#### Storm Servers
+#### Cloud Servers
 
 ```terraform
 data "liquidweb_network_zone" "testing" {
@@ -63,7 +63,7 @@ data "liquidweb_network_zone" "testing" {
   region_name = "US Central"
 }
 
-resource "liquidweb_storm_server" "testing" {
+resource "liquidweb_cloud_server" "testing" {
   count = 1
 
   config_id      = 1090
@@ -75,7 +75,7 @@ resource "liquidweb_storm_server" "testing" {
 }
 ```
 
-#### Storm Servers + Load Balancer
+#### Cloud Servers + Load Balancer
 
 ```terraform
 data "liquidweb_network_zone" "testing" {
@@ -83,7 +83,7 @@ data "liquidweb_network_zone" "testing" {
   region_name = "US Central"
 }
 
-resource "liquidweb_storm_server" "testing" {
+resource "liquidweb_cloud_server" "testing" {
   count = 1
 
   config_id      = 1090
@@ -98,7 +98,7 @@ resource "liquidweb_network_load_balancer" "testing" {
   name       = "testing"
   region = data.liquidweb_network_zone.testing.region_id
 
-  nodes = liquidweb_storm_server.testing[*].ip
+  nodes = liquidweb_cloud_server.testing[*].ip
 
   service {
     src_port  = 80
@@ -122,7 +122,7 @@ data "liquidweb_network_zone" "testing" {
   region_name = "US Central"
 }
 
-data "liquidweb_storm_server_config" "testing" {
+data "liquidweb_cloud_server_config" "testing" {
   vcpu         = 2
   memory       = "2000"
   disk         = "100"

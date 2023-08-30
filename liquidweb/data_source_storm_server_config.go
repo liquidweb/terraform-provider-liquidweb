@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceLWStormServerConfig() *schema.Resource {
+func dataSourceServerConfig() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLWStormServerConfigRead,
+		Read: dataSourceServerConfigRead,
 
 		Schema: map[string]*schema.Schema{
 			// Filters
@@ -70,8 +70,8 @@ func dataSourceLWStormServerConfig() *schema.Resource {
 	}
 }
 
-// dataSourceLWStormServerConfigRead gets the available storm configs.
-func dataSourceLWStormServerConfigRead(d *schema.ResourceData, meta interface{}) error {
+// dataSourceServerConfigRead gets the available server configs.
+func dataSourceServerConfigRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 	params := storm.ConfigListParams{}
 	params.PageSize = 200 // Grab all configs at once.
@@ -90,7 +90,7 @@ func dataSourceLWStormServerConfigRead(d *schema.ResourceData, meta interface{})
 	}
 
 	// Filter list based on various criteria.
-	filteredConfigs := filterLWStormConfigs(result, d)
+	filteredConfigs := filterServerConfig(result, d)
 	log.Printf("blars: %+v", filteredConfigs)
 	if len(filteredConfigs) != 1 {
 		return fmt.Errorf("Search returned %d results, please revise so only one is returned", len(filteredConfigs))
@@ -112,7 +112,7 @@ func dataSourceLWStormServerConfigRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func filterLWStormConfigs(configList *storm.ConfigList, d *schema.ResourceData) []storm.Config {
+func filterServerConfig(configList *storm.ConfigList, d *schema.ResourceData) []storm.Config {
 	active := d.Get("active").(bool)
 	available := d.Get("available").(bool)
 	category := d.Get("category").(string)

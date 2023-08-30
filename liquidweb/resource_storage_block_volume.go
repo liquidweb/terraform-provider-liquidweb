@@ -7,7 +7,7 @@ import (
 	storage "github.com/liquidweb/liquidweb-go/storage"
 )
 
-func resourceStorageBlockVolume() *schema.Resource {
+func resourceBlockStorage() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceCreateBlockVolume,
 		Read:   resourceReadBlockVolume,
