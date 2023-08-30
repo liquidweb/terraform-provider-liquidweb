@@ -5,13 +5,11 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
-	lwapi "github.com/liquidweb/go-lwApi"
 	lwgoapi "github.com/liquidweb/liquidweb-go/client"
 )
 
 // Config holds all of the metadata for the provider and the Liquidweb API client.
 type Config struct {
-	Client         *lwapi.Client
 	LWAPI          *lwgoapi.API
 	username       string
 	password       string
@@ -21,13 +19,12 @@ type Config struct {
 }
 
 // NewConfig accepts configuration parameters and returns a Config.
-func NewConfig(username string, password string, url string, timeout int, client *lwapi.Client, nClient *lwgoapi.API) (*Config, error) {
+func NewConfig(username string, password string, url string, timeout int, nClient *lwgoapi.API) (*Config, error) {
 	c := &Config{
 		username:       username,
 		password:       password,
 		URL:            url,
 		Timeout:        timeout,
-		Client:         client,
 		LWAPI:          nClient,
 		TracingEnabled: len(os.Getenv("TF_LOG")) > 0,
 	}
@@ -62,11 +59,11 @@ func GetConfig(path string) (interface{}, error) {
 	}
 	_ = metadata
 
-	config := lwapi.LWAPIConfig{
-		Username: &conf.LWAPI.Username,
-		Password: &conf.LWAPI.Password,
-		Url:      conf.LWAPI.URL,
-	}
+	// config := lwapi.LWAPIConfig{
+	// 	Username: &conf.LWAPI.Username,
+	// 	Password: &conf.LWAPI.Password,
+	// 	Url:      conf.LWAPI.URL,
+	// }
 
 	// vc := viper.New()
 	// vc.SetConfigFile(path)
@@ -94,10 +91,10 @@ func GetConfig(path string) (interface{}, error) {
 	// }
 
 	// Initialize original LW go client.
-	client, err := lwapi.New(&config)
-	if err != nil {
-		return nil, err
-	}
+	// client, err := lwapi.New(&config)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// Initial new LW go client.
 	lwAPI, err := lwgoapi.NewAPI(conf.LWAPI.Username, conf.LWAPI.Password, conf.LWAPI.URL, conf.LWAPI.Timeout)
@@ -110,7 +107,6 @@ func GetConfig(path string) (interface{}, error) {
 		conf.LWAPI.Password,
 		conf.LWAPI.URL,
 		conf.LWAPI.Timeout,
-		client,
 		lwAPI,
 	)
 }

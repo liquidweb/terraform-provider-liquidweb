@@ -5,7 +5,6 @@ replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/hashicorp/terraform-plugin-sdk v1.17.2
-	github.com/liquidweb/go-lwApi v0.0.0-20190605172801-52a4864d2738
 	github.com/liquidweb/liquidweb-go v1.6.0
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/uber/jaeger-client-go v2.16.0+incompatible
