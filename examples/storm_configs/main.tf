@@ -11,13 +11,13 @@ data "liquidweb_network_zone" "testing" {
   region_name = "US Central"
 }
 
-data "liquidweb_storm_server_config" "testing" {
+data "liquidweb_cloud_server_config" "testing" {
   vcpu         = 2
   memory       = "2000"
   disk         = "100"
   network_zone = data.liquidweb_network_zone.testing.id
 }
 
-output "testing_storm_config_id" {
-  value = data.liquidweb_storm_server_config.testing.id
+output "testing_cloud_config_id" {
+  value = data.liquidweb_cloud_server_config.testing.id
 }

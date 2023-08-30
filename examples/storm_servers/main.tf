@@ -11,10 +11,10 @@ data "liquidweb_network_zone" "api" {
   region_name = "US Central"
 }
 
-resource "liquidweb_storm_server" "api_servers" {
+resource "liquidweb_cloud_server" "api_servers" {
   count = 2
 
-  #config_id = "${data.liquidweb_storm_server_config.api.id}"
+  #config_id = "${data.liquidweb_cloud.api.id}"
   config_id = 1090
   zone      = 28
   #data.liquidweb_network_zone.api.id
@@ -25,5 +25,5 @@ resource "liquidweb_storm_server" "api_servers" {
 }
 
 output "api_server_ips" {
-  value = join(",", concat(liquidweb_storm_server.api_servers.*.ip))
+  value = join(",", concat(liquidweb_cloud_server.api_servers.*.ip))
 }
