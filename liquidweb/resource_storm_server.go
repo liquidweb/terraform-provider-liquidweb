@@ -1,12 +1,14 @@
 package liquidweb
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	opentracing "github.com/opentracing/opentracing-go"
 
 	"github.com/liquidweb/liquidweb-go/storm"
@@ -131,6 +133,12 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 		PublicSSHKey: d.Get("public_ssh_key").(string),
 		Zone:         d.Get("zone").(int),
 	}
+
+	reqData, err := json.Marshal(serverParams)
+	if err != nil {
+		return err
+	}
+	log.Printf("creating server with params: %s\n", string(reqData))
 
 	config := m.(*Config)
 

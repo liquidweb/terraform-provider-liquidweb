@@ -1,11 +1,12 @@
 package liquidweb
 
 import (
+	"log"
 	"os"
 
-	lwgoapi "github.com/liquidweb/liquidweb-go/client"
+	"github.com/BurntSushi/toml"
 	lwapi "github.com/liquidweb/go-lwApi"
-	"github.com/spf13/viper"
+	lwgoapi "github.com/liquidweb/liquidweb-go/client"
 )
 
 // Config holds all of the metadata for the provider and the Storm API client.
@@ -31,31 +32,66 @@ func NewConfig(username string, password string, url string, timeout int, client
 		TracingEnabled: len(os.Getenv("TF_LOG")) > 0,
 	}
 
-
 	return c, nil
 }
 
 // GetConfig handles mapping configuration between Terraform & Liquid Web's Storm API configuration.
 func GetConfig(path string) (interface{}, error) {
-	vc := viper.New()
-	vc.SetConfigFile(path)
-	vc.AutomaticEnv()
+	log.Printf("config file: %s\n", path)
 
-	verr := vc.ReadInConfig()
-	if verr != nil {
-		return nil, verr
+	type lwapiConfig struct {
+		Username string `toml:"username"`
+		Password string `toml:"password"`
+		URL      string `toml:"url"`
+		Timeout  int    `toml:"timeout"`
 	}
 
-	username := vc.GetString("lwapi.username")
-	password := vc.GetString("lwapi.password")
-	url := vc.GetString("lwapi.url")
-	timeout := vc.GetInt("lwapi.Timeout")
+	conf := struct {
+		LWAPI lwapiConfig `toml:"lwapi"`
+	}{}
+
+	body, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("conf file contained: %s\n\n", body)
+
+	metadata, err := toml.Decode(string(body), &conf)
+	if err != nil {
+		return nil, err
+	}
+	_ = metadata
 
 	config := lwapi.LWAPIConfig{
-		Username: &username,
-		Password: &password,
-		Url:      url,
+		Username: &conf.LWAPI.Username,
+		Password: &conf.LWAPI.Password,
+		Url:      conf.LWAPI.URL,
 	}
+
+	// vc := viper.New()
+	// vc.SetConfigFile(path)
+	// vc.AutomaticEnv()
+	// vc.SetConfigType("toml")
+
+	// if err = vc.ReadConfig(bytes.NewBuffer(body)); err != nil {
+	// 	return nil, err
+	// }
+
+	// log.Printf("configuration keys %#v exist\n", vc.AllKeys())
+	// for _, k := range vc.AllKeys() {
+	// 	log.Printf("setting %s is set to %#v\n", k, vc.Get(k))
+	// }
+
+	// username := vc.GetString("lwapi.username")
+	// password := vc.GetString("lwapi.password")
+	// url := vc.GetString("lwapi.url")
+	// timeout := vc.GetInt("lwapi.Timeout")
+
+	// config := lwapi.LWAPIConfig{
+	// 	Username: &username,
+	// 	Password: &password,
+	// 	Url:      url,
+	// }
 
 	// Initialize original LW go client.
 	client, err := lwapi.New(&config)
@@ -64,16 +100,16 @@ func GetConfig(path string) (interface{}, error) {
 	}
 
 	// Initial new LW go client.
-	lwAPI, err := lwgoapi.NewAPI(username, password, url, timeout)
+	lwAPI, err := lwgoapi.NewAPI(conf.LWAPI.Username, conf.LWAPI.Password, conf.LWAPI.URL, conf.LWAPI.Timeout)
 	if err != nil {
 		return nil, err
 	}
 
 	return NewConfig(
-		username,
-		password,
-		url,
-		timeout,
+		conf.LWAPI.Username,
+		conf.LWAPI.Password,
+		conf.LWAPI.URL,
+		conf.LWAPI.Timeout,
 		client,
 		lwAPI,
 	)

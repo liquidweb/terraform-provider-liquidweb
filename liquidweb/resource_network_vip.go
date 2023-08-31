@@ -3,8 +3,8 @@ package liquidweb
 import (
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	network "github.com/liquidweb/liquidweb-go/network"
-	"github.com/hashicorp/terraform/helper/schema"
 	opentracing "github.com/opentracing/opentracing-go"
 )
 

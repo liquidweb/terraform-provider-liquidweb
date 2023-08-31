@@ -1,7 +1,7 @@
 package liquidweb
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 // Provider implements the provider definition.

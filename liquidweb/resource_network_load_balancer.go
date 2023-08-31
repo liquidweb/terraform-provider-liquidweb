@@ -3,9 +3,9 @@ package liquidweb
 import (
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	network "github.com/liquidweb/liquidweb-go/network"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/validation"
 )
 
 func resourceNetworkLoadBalancer() *schema.Resource {

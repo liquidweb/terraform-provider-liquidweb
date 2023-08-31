@@ -3,8 +3,8 @@ package liquidweb
 import (
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	storage "github.com/liquidweb/liquidweb-go/storage"
-	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourceStorageBlockVolume() *schema.Resource {
