@@ -8,7 +8,7 @@ import (
 	network "github.com/liquidweb/liquidweb-go/network"
 )
 
-func resourceNetworkDNSRecord() *schema.Resource {
+func resourceDNSRecord() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceCreateNetworkDNSRecord,
 		Read:   resourceReadNetworkDNSRecord,

@@ -16,14 +16,21 @@ func Provider() *schema.Provider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"liquidweb_network_zone":        dataSourceLWNetworkZone(),
-			"liquidweb_storm_server_config": dataSourceLWStormServerConfig(),
+			"liquidweb_cloud_server_config": dataSourceServerConfig(),
+
+			// backwards compat
+			"liquidweb_storm_server_config": dataSourceServerConfig(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"liquidweb_storage_block_volume":  resourceStorageBlockVolume(),
-			"liquidweb_storm_server":          resourceStormServer(),
-			"liquidweb_network_dns_record":    resourceNetworkDNSRecord(),
-			"liquidweb_network_load_balancer": resourceNetworkLoadBalancer(),
-			"liquidweb_network_vip":           resourceNetworkVIP(),
+			"liquidweb_cloud_block_storage":   resourceBlockStorage(),
+			"liquidweb_cloud_server":          resourceServer(),
+			"liquidweb_network_dns_record":    resourceDNSRecord(),
+			"liquidweb_network_load_balancer": resourceLoadBalancer(),
+			"liquidweb_network_vip":           resourceFloatingIP(),
+
+			// backwards compat
+			"liquidweb_storage_block_volume": resourceBlockStorage(),
+			"liquidweb_storm_server":         resourceServer(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

@@ -1,33 +1,31 @@
-[![Build Status](https://travis-ci.org/liquidweb/terraform-provider-liquidweb.svg?branch=master)](https://travis-ci.org/liquidweb/terraform-provider-liquidweb)
-
 # Liquid Web Terraform Provider
+
+[![Build Status](https://travis-ci.org/liquidweb/terraform-provider-liquidweb.svg?branch=master)](https://travis-ci.org/liquidweb/terraform-provider-liquidweb)
 
 ## Developing
 
-Dependencies:
+If you want to develop for this, you need go1.21+ and `terraform` 1.5+.
 
-- Create a `.lwapi.toml` file in the root directory:
+Tests can be run with (from the root of this repository):
 
-```toml
-[lwApi]
-username = "[yourusername]"
-password = "[yourpassword]"
-url = "https://api.stormondemand.com"
-timeout = 15
+```bash
+go test -v ./...
 ```
 
-- `make shell` -- drop into a development shell so you can build/test the provider.
+This can be built with:
 
-The following run inside the development shell:
+```bash
+go build
+```
 
-- `make build` -- build the provider
-- `make init` -- initialize terraform
-- `EXAMPLE=./examples/storm_servers make plan` -- plan an example project
-- `EXAMPLE=./examples/storm_servers make apply` -- apply an example project
-- `EXAMPLE=./examples/storm_servers make destroy` -- destroy an example project
-- `make test_release` -- test a release (requires goreleaser to be installed)
+Then to use a bin you built, relative to your `terraform minfests` copy it to:
 
-There are also `devplan` and `devapply` make tasks that will do a build and subsequent init followed by plan/apply.
+```bash
+~/terraform.d/plugins/local.providers/liquidweb/liquidweb/1.6.0/darwin_amd64/terraform-provider-liquidweb
+```
+
+- `darwin_amd64` changes relevative to your platform
+- `1.6.0` is relative to what version this is`
 
 ## Tracing
 
@@ -38,24 +36,56 @@ make jaeger
 xdg-open http://localhost:16686/search
 ```
 
-In the development container:
+Tracing is enabled if `JAEGER_DISABLED` is set to `false`. This requires the `jaeger` container to be running and general use with an external Terraform project isn't yet supported.
 
-```shell
-JAEGER_DISABLED=false EXAMPLE=./examples/storm_servers make apply
+## Using this Provider
+
+All things for this section are relative to your terraform manifests.
+
+This terraform provider is currently not published.
+Thus, you need the provider compiled above at the location above.
+
+You also currently need the following toml file with your credentials.
+
+- Create a `.lwapi.toml` file in the root directory:
+
+```toml
+[lwApi]
+username = "[yourusername]"
+password = "[yourpassword]"
+url = "https://api.liquidweb.com"
+timeout = 15
 ```
 
-Tracing is enabled if `JAEGER_DISABLED` is set to `false`. This requires the `jaeger` container to be running and general use with an external Terraform project isn't yet supported.
+These both then need to be included in with a provider block like:
+
+```tf
+terraform {
+  required_providers {
+    liquidweb = {
+      source = "local.providers/liquidweb/liquidweb"
+      version = "~> 1.5.8"
+    }
+  }
+}
+
+variable "liquidweb_config_path" {
+  type = string
+}
+
+provider "liquidweb" {
+  config_path = var.liquidweb_config_path
+}
+```
 
 ## Examples
 
-In the `examples` directory there are Terraform projects illustrating how to create various resources. There are a handful of Make tasks that are helpful:
+In the `examples` directory there are Terraform manifests demonstrating usage.
+Everything needs `provider.tf`, most others are only dependent on themselves.
 
-- `EXAMPLE=./examples/storm_servers make key` -- create a new SSH key to provision Storm Servers with (only relevant for the storm server and load balancer example).
-- `EXAMPLE=./examples/storm_servers make devplan` -- build, init and plan.
-- `EXAMPLE=./examples/storm_servers make devapply` -- build, init and apply cycle to create resources.
-- `EXAMPLE=./examples/storm_servers make destroy` -- destroy resources.
+There are also a few example projects in that folder.
 
-#### Storm Servers
+### Cloud Servers
 
 ```terraform
 data "liquidweb_network_zone" "testing" {
@@ -63,7 +93,7 @@ data "liquidweb_network_zone" "testing" {
   region_name = "US Central"
 }
 
-resource "liquidweb_storm_server" "testing" {
+resource "liquidweb_cloud_server" "testing" {
   count = 1
 
   config_id      = 1090
@@ -75,7 +105,7 @@ resource "liquidweb_storm_server" "testing" {
 }
 ```
 
-#### Storm Servers + Load Balancer
+### Cloud Servers + Load Balancer
 
 ```terraform
 data "liquidweb_network_zone" "testing" {
@@ -83,7 +113,7 @@ data "liquidweb_network_zone" "testing" {
   region_name = "US Central"
 }
 
-resource "liquidweb_storm_server" "testing" {
+resource "" "testing" {
   count = 1
 
   config_id      = 1090
@@ -98,7 +128,7 @@ resource "liquidweb_network_load_balancer" "testing" {
   name       = "testing"
   region = data.liquidweb_network_zone.testing.region_id
 
-  nodes = liquidweb_storm_server.testing[*].ip
+  nodes = .testing[*].ip
 
   service {
     src_port  = 80
@@ -114,7 +144,7 @@ resource "liquidweb_network_load_balancer" "testing" {
 }
 ```
 
-#### Storm Configs
+### Cloud Configs
 
 ```terraform
 data "liquidweb_network_zone" "testing" {
@@ -122,7 +152,7 @@ data "liquidweb_network_zone" "testing" {
   region_name = "US Central"
 }
 
-data "liquidweb_storm_server_config" "testing" {
+data "_config" "testing" {
   vcpu         = 2
   memory       = "2000"
   disk         = "100"
@@ -130,7 +160,7 @@ data "liquidweb_storm_server_config" "testing" {
 }
 ```
 
-#### DNS
+### DNS
 
 ```terraform
 resource "liquidweb_network_dns_record" "testing" {
@@ -141,7 +171,7 @@ resource "liquidweb_network_dns_record" "testing" {
 }
 ```
 
-#### Block Volumes
+### Block Volumes
 
 ```terraform
 resource "liquidweb_network_block_volume" "testing" {
@@ -151,7 +181,7 @@ resource "liquidweb_network_block_volume" "testing" {
 }
 ```
 
-#### VIP
+### VIP
 
 ```terraform
 resource "liquidweb_network_vip" "testing" {

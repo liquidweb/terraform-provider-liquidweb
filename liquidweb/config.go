@@ -9,7 +9,7 @@ import (
 	lwgoapi "github.com/liquidweb/liquidweb-go/client"
 )
 
-// Config holds all of the metadata for the provider and the Storm API client.
+// Config holds all of the metadata for the provider and the Liquidweb API client.
 type Config struct {
 	Client         *lwapi.Client
 	LWAPI          *lwgoapi.API
@@ -35,7 +35,7 @@ func NewConfig(username string, password string, url string, timeout int, client
 	return c, nil
 }
 
-// GetConfig handles mapping configuration between Terraform & Liquid Web's Storm API configuration.
+// GetConfig handles mapping configuration between Terraform & Liquid Web's Liquidweb API configuration.
 func GetConfig(path string) (interface{}, error) {
 	log.Printf("config file: %s\n", path)
 

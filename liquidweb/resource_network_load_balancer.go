@@ -8,7 +8,7 @@ import (
 	network "github.com/liquidweb/liquidweb-go/network"
 )
 
-func resourceNetworkLoadBalancer() *schema.Resource {
+func resourceLoadBalancer() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceCreateNetworkLoadBalancer,
 		Read:   resourceReadNetworkLoadBalancer,

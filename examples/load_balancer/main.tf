@@ -11,7 +11,7 @@ data "liquidweb_network_zone" "testing" {
   region_name = "US Central"
 }
 
-resource "liquidweb_storm_server" "testing" {
+resource "liquidweb_cloud_server" "testing" {
   count = 1
 
   config_id      = 1090
@@ -28,7 +28,7 @@ resource "liquidweb_network_load_balancer" "testing_some_space_balls" {
 
   region = data.liquidweb_network_zone.testing.region_id
 
-  nodes = liquidweb_storm_server.testing[*].ip
+  nodes = liquidweb_cloud_server.testing[*].ip
 
   service {
     src_port  = 80
@@ -46,7 +46,7 @@ resource "liquidweb_network_load_balancer" "testing_some_space_balls" {
 }
 
 output "testing_instances" {
-  value = liquidweb_storm_server.testing.*.ip
+  value = liquidweb_cloud_server.testing.*.ip
 }
 
 output "space_balls" {

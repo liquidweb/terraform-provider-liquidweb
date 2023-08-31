@@ -14,12 +14,12 @@ import (
 	"github.com/liquidweb/liquidweb-go/storm"
 )
 
-func resourceStormServer() *schema.Resource {
+func resourceServer() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceCreateServer,
-		Read:   resourceReadStormServer,
-		Update: resourceUpdateStormServer,
-		Delete: resourceDeleteStormServer,
+		Read:   resourceReadServer,
+		Update: resourceUpdateServer,
+		Delete: resourceDeleteServer,
 
 		Schema: map[string]*schema.Schema{
 			"accnt": &schema.Schema{
@@ -157,7 +157,7 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 	stateChange := &resource.StateChangeConf{
 		Delay:          10 * time.Second,
 		Pending:        storm.ServerStates,
-		Refresh:        refreshStormServer(config, d.Id()),
+		Refresh:        refreshServer(config, d.Id()),
 		Target:         []string{"Running"},
 		Timeout:        30 * time.Minute,
 		NotFoundChecks: 2,
@@ -174,10 +174,10 @@ func resourceCreateServer(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	return resourceReadStormServer(d, m)
+	return resourceReadServer(d, m)
 }
 
-func resourceReadStormServer(d *schema.ResourceData, m interface{}) error {
+func resourceReadServer(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
 	tracer := opentracing.GlobalTracer()
 	sp := tracer.StartSpan("read-storm-server")
@@ -191,12 +191,12 @@ func resourceReadStormServer(d *schema.ResourceData, m interface{}) error {
 		}
 		return err
 	}
-	updateStormServerResource(d, result)
+	updateServerResource(d, result)
 
 	return nil
 }
 
-func resourceUpdateStormServer(d *schema.ResourceData, m interface{}) error {
+func resourceUpdateServer(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
 	params := storm.ServerParams{
 		BackupEnabled:  d.Get("backup_enabled").(int),
@@ -215,12 +215,12 @@ func resourceUpdateStormServer(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	updateStormServerResource(d, result)
+	updateServerResource(d, result)
 
 	stateChange := &resource.StateChangeConf{
 		Delay:          10 * time.Second,
 		Pending:        storm.ServerStates,
-		Refresh:        refreshStormServer(config, d.Id()),
+		Refresh:        refreshServer(config, d.Id()),
 		Target:         []string{"Running"},
 		Timeout:        20 * time.Minute,
 		NotFoundChecks: 240,
@@ -234,12 +234,12 @@ func resourceUpdateStormServer(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	updateStormServerResource(d, server.(*storm.Server))
+	updateServerResource(d, server.(*storm.Server))
 
 	return nil
 }
 
-func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
+func resourceDeleteServer(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
 	tracer := opentracing.GlobalTracer()
 	sp := tracer.StartSpan("destroy-storm-server")
@@ -253,7 +253,7 @@ func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 	stateChange := &resource.StateChangeConf{
 		Delay:          10 * time.Second,
 		Pending:        []string{"pending destruction"},
-		Refresh:        refreshDestroyStormServerStatus(config, d.Id()),
+		Refresh:        refreshDestroyServerStatus(config, d.Id()),
 		Target:         []string{"destroyed"},
 		Timeout:        20 * time.Minute,
 		NotFoundChecks: 240,
@@ -273,8 +273,8 @@ func resourceDeleteStormServer(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-// refreshDestroyStormServerStatus queries the API for the status of the server destroy.
-func refreshDestroyStormServerStatus(config *Config, uid string) resource.StateRefreshFunc {
+// refreshDestroyServerStatus queries the API for the status of the server destroy.
+func refreshDestroyServerStatus(config *Config, uid string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		s, err := config.LWAPI.StormServer.Status(uid)
 		if err != nil {
@@ -288,9 +288,9 @@ func refreshDestroyStormServerStatus(config *Config, uid string) resource.StateR
 	}
 }
 
-// refreshStormServer queries the API for status.
+// refreshServer queries the API for status.
 // If the status is "Running" query for its details and return them.
-func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
+func refreshServer(config *Config, uid string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		result, err := config.LWAPI.StormServer.Status(uid)
 		if err != nil {
@@ -322,8 +322,8 @@ func refreshStormServer(config *Config, uid string) resource.StateRefreshFunc {
 	}
 }
 
-// updateStormServerResource updates the resource data for the storm server.
-func updateStormServerResource(d *schema.ResourceData, server *storm.Server) {
+// updateServerResource updates the resource data for the cloud server.
+func updateServerResource(d *schema.ResourceData, server *storm.Server) {
 	d.SetId(server.UniqID)
 	d.Set("accnt", server.ACCNT)
 	d.Set("active", server.Active)
