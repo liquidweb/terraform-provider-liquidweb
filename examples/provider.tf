@@ -5,8 +5,8 @@ variable "liquidweb_config_path" {
 terraform {
   required_providers {
     liquidweb = {
-      source = "local.providers/liquidweb/liquidweb"
-      version = "~> 1.5.8"
+      source = "registry.terraform.io/liquidweb/liquidweb"
+      version = "~> 1.6.2"
     }
   }
 }
