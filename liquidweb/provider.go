@@ -10,7 +10,7 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"config_path": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Path to the LiquidWeb API configuration file.",
 			},
 		},
@@ -37,5 +37,5 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	return GetConfig(d.Get("config_path").(string))
+	return GetConfig(d)
 }
