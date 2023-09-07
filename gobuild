@@ -1,8 +1,0 @@
-#!/bin/bash
-
-# Simple bash script to go install this onto your local machine
-
-new_tag=$(git tag -l|sort -n|tail -n1|awk -F. 'BEGIN{OFS="."};{$NF+=1; print}')
-
-# shellcheck disable=SC2088
-go build -o "~/terraform.d/plugins/registry.terraform.io/liquidweb/liquidweb/${new_tag}/darwin_amd64/terraform-provider-liquidweb"

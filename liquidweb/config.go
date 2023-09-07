@@ -10,7 +10,7 @@ import (
 )
 
 const lwApiURL = "https://api.liquidweb.com"
-const lwApiTimeout = 15
+const lwApiTimeout = 60
 
 var ErrUsernameNotSet = fmt.Errorf("liquidweb username not set")
 var ErrSecretNotSet = fmt.Errorf("liquidweb secret not set")
