@@ -3,7 +3,6 @@ module github.com/liquidweb/terraform-provider-liquidweb
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
 
 require (
-	github.com/BurntSushi/toml v0.3.1
 	github.com/hashicorp/terraform-plugin-sdk v1.17.2
 	github.com/liquidweb/liquidweb-go v1.6.0
 	github.com/opentracing/opentracing-go v1.1.0
@@ -56,7 +55,6 @@ require (
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jstemmer/go-junit-report v0.9.1 // indirect
-	github.com/kkyr/fig v0.3.2 // indirect
 	github.com/klauspost/compress v1.11.2 // indirect
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.5 // indirect
@@ -69,7 +67,6 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/oklog/run v1.0.0 // indirect
-	github.com/pelletier/go-toml v1.9.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/posener/complete v1.2.1 // indirect
 	github.com/spf13/afero v1.2.2 // indirect

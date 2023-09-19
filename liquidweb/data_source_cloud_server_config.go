@@ -45,7 +45,7 @@ func dataSourceServerConfig() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"disk": {
+			"disk": { // disk space (in GB) included with VM
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
@@ -54,15 +54,15 @@ func dataSourceServerConfig() *schema.Resource {
 				Default:  false,
 				Optional: true,
 			},
-			"memory": {
+			"memory": { // memory (in mb) included with vm
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"vcpu": {
+			"vcpu": { // CPU threads / vcpus included with vm
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"zone_availability": {
+			"zone_availability": { // which zones this config is availble in
 				Type:     schema.TypeMap,
 				Optional: true,
 			},
