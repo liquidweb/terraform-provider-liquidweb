@@ -1,12 +1,19 @@
 package liquidweb
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
-	"github.com/BurntSushi/toml"
 	lwgoapi "github.com/liquidweb/liquidweb-go/client"
 )
+
+const lwApiURL = "https://api.liquidweb.com"
+const lwApiTimeout = 60
+
+var ErrUsernameNotSet = fmt.Errorf("liquidweb username not set")
+var ErrSecretNotSet = fmt.Errorf("liquidweb secret not set")
 
 // Config holds all of the metadata for the provider and the Liquidweb API client.
 type Config struct {
@@ -33,80 +40,43 @@ func NewConfig(username string, password string, url string, timeout int, nClien
 }
 
 // GetConfig handles mapping configuration between Terraform & Liquid Web's Liquidweb API configuration.
-func GetConfig(path string) (interface{}, error) {
-	log.Printf("config file: %s\n", path)
+func GetConfig() (interface{}, error) {
+	var username, token string
 
-	type lwapiConfig struct {
-		Username string `toml:"username"`
-		Password string `toml:"password"`
-		URL      string `toml:"url"`
-		Timeout  int    `toml:"timeout"`
+	for _, e := range os.Environ() {
+		pair := strings.SplitN(e, "=", 2)
+		switch pair[0] {
+		case "LWAPI_USERNAME":
+			log.Printf("read username %s\n", pair[1])
+			username = pair[1]
+		case "LWAPI_PASSWORD":
+			token = pair[1]
+		}
 	}
 
-	conf := struct {
-		LWAPI lwapiConfig `toml:"lwapi"`
-	}{}
-
-	body, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
+	if username == "" {
+		return nil, ErrUsernameNotSet
 	}
-	log.Printf("conf file contained: %s\n\n", body)
 
-	metadata, err := toml.Decode(string(body), &conf)
-	if err != nil {
-		return nil, err
+	if token == "" {
+		return nil, ErrSecretNotSet
 	}
-	_ = metadata
-
-	// config := lwapi.LWAPIConfig{
-	// 	Username: &conf.LWAPI.Username,
-	// 	Password: &conf.LWAPI.Password,
-	// 	Url:      conf.LWAPI.URL,
-	// }
-
-	// vc := viper.New()
-	// vc.SetConfigFile(path)
-	// vc.AutomaticEnv()
-	// vc.SetConfigType("toml")
-
-	// if err = vc.ReadConfig(bytes.NewBuffer(body)); err != nil {
-	// 	return nil, err
-	// }
-
-	// log.Printf("configuration keys %#v exist\n", vc.AllKeys())
-	// for _, k := range vc.AllKeys() {
-	// 	log.Printf("setting %s is set to %#v\n", k, vc.Get(k))
-	// }
-
-	// username := vc.GetString("lwapi.username")
-	// password := vc.GetString("lwapi.password")
-	// url := vc.GetString("lwapi.url")
-	// timeout := vc.GetInt("lwapi.Timeout")
-
-	// config := lwapi.LWAPIConfig{
-	// 	Username: &username,
-	// 	Password: &password,
-	// 	Url:      url,
-	// }
-
-	// Initialize original LW go client.
-	// client, err := lwapi.New(&config)
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	// Initial new LW go client.
-	lwAPI, err := lwgoapi.NewAPI(conf.LWAPI.Username, conf.LWAPI.Password, conf.LWAPI.URL, conf.LWAPI.Timeout)
+	lwAPI, err := lwgoapi.NewAPI(
+		username,
+		token,
+		lwApiURL,
+		lwApiTimeout)
 	if err != nil {
 		return nil, err
 	}
 
 	return NewConfig(
-		conf.LWAPI.Username,
-		conf.LWAPI.Password,
-		conf.LWAPI.URL,
-		conf.LWAPI.Timeout,
+		username,
+		token,
+		lwApiURL,
+		lwApiTimeout,
 		lwAPI,
 	)
 }

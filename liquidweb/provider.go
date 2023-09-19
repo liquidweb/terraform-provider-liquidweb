@@ -7,13 +7,7 @@ import (
 // Provider implements the provider definition.
 func Provider() *schema.Provider {
 	return &schema.Provider{
-		Schema: map[string]*schema.Schema{
-			"config_path": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Path to the LiquidWeb API configuration file.",
-			},
-		},
+		Schema: map[string]*schema.Schema{},
 		DataSourcesMap: map[string]*schema.Resource{
 			"liquidweb_network_zone":        dataSourceLWNetworkZone(),
 			"liquidweb_cloud_server_config": dataSourceServerConfig(),
@@ -37,5 +31,5 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	return GetConfig(d.Get("config_path").(string))
+	return GetConfig()
 }
