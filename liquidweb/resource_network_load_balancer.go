@@ -166,7 +166,7 @@ func buildNetworkLoadBalancerUpdateOpts(d *schema.ResourceData, m interface{}) n
 		UniqID:             d.Id(),
 		Name:               d.Get("name").(string),
 		Nodes:              expandSetToStrings(d.Get("nodes").(*schema.Set).List()),
-		Services:           expandServicesSet(d.Get("services").(*schema.Set).List()),
+		Services:           expandServicesSet(d.Get("service").(*schema.Set).List()),
 		SessionPersistence: d.Get("session_persistence").(bool),
 		SSLCert:            d.Get("ssl_cert").(string),
 		SSLIncludes:        d.Get("ssl_includes").(bool),
@@ -184,7 +184,7 @@ func updateLoadBalancerResource(d *schema.ResourceData, lb *network.LoadBalancer
 	d.Set("name", lb.Name)
 	d.Set("nodes", lb.Nodes)
 	d.Set("region", lb.RegionID)
-	d.Set("services", lb.Services)
+	d.Set("service", lb.Services)
 	d.Set("session_persistence", lb.SessionPersistence)
 	d.Set("ssl_includes", lb.SSLIncludes)
 	d.Set("strategy", lb.Strategy)
