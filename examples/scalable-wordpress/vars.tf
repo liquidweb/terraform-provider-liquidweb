@@ -5,12 +5,12 @@
 
 variable "site_name" {
   type = string
-  default = "scaling.hostbaitor.com"
+  default = "scaling.example.com"
 }
 
 variable "top_domain" {
   type = string
-  default = "hostbaitor.com"
+  default = "example.com"
 }
 
 variable "username" {

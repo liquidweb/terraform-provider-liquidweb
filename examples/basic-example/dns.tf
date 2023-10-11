@@ -3,10 +3,10 @@ resource "random_id" "dns_rec" {
 }
 
 resource "liquidweb_network_dns_record" "testing_a_record" {
-  name  = "dns-rec-${random_id.dns_rec.hex}.us-midwest-2.hostbaitor.com"
+  name  = "dns-rec-${random_id.dns_rec.hex}.us-midwest-2.example.com"
   type  = "A"
   rdata = "127.0.0.1"
-  zone  = "hostbaitor.com"
+  zone  = "example.com"
 }
 
 output "domain_a_name" {

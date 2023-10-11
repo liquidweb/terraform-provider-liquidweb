@@ -70,12 +70,12 @@ The two things that you likely only want to change are:
 ```hcl
 variable "site_name" {
   type = string
-  default = "simple.hostbaitor.com"
+  default = "simple.example.com"
 }
 
 variable "top_domain" {
   type = string
-  default = "hostbaitor.com"
+  default = "example.com"
 }
 ```
 
