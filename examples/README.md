@@ -1,7 +1,6 @@
 # Terraform Examples
 
 This repository contains terraform examples that are slated for inclusion in the terraform repository elsewhere, but not yet ready.
-I will likely archive / remove it in the future when they are at a place where they can be merged into `liquidweb/terraform-provider-liquidweb`.
 
 ## What is Terraform?
 
@@ -50,12 +49,6 @@ The major commands that terraform provides are:
 - `refresh` - update the state of assets (not supported with LiquidWeb's provider)
 - `import` - add existing assets into current state (not supported with LiquidWeb's provider)
 
-Terraform Modules also exist.
-For example, [there is a wordpress module](https://registry.terraform.io/providers/yyamanoi1222/wordpress/latest/docs).
-There are also other IaC tools that can be used with Terraform.
-The idomatic approach to IaC typically involves multiple tools used in combination.
-However for the purposes of these examples, the focus is on terraform.
-
 ### Installing and Examples
 
 The [Hashicorp official instructions for installing terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) are well written.
@@ -84,19 +77,10 @@ If you wish to get an SSL with the `acme` provider with a DNS server, you must p
 ```env
 LIQUID_WEB_USERNAME="username"
 LIQUID_WEB_PASSWORD="password"
-LIQUID_WEB_ZONE="zone" # the DNS zone where the ACME challenge record must be created
 ```
 
 For examples, please look at:
 
-- [Basic server example](https://github.com/jakdept/liquidweb-terraform-example/tree/main/basic-example)
-- [Basic wordpress example](https://github.com/jakdept/liquidweb-terraform-example/tree/main/simple-wordpress)
-- [Wordpress Cluster example](https://github.com/jakdept/liquidweb-terraform-example/tree/main/scalable-wordpress)
-
-Eventually, these will be moving into [the repository for the provider](https://github.com/liquidweb/terraform-provider-liquidweb/tree/master/examples)
-and will be automatically published to other locations.
-
-More examples will also be available.
-More features will also likely be added to the provider in the future as well.
-Requests for specific examples will also be opened in the future.
-However, first, the focus is on simplifying some of the tools.
+- [Basic server example](./basic-example/)
+- [Basic wordpress example](./simple-wordpress/)
+- [Wordpress Cluster example](./scalable-wordpress/)
