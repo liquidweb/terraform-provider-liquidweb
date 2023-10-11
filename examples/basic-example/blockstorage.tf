@@ -3,7 +3,7 @@ resource "random_id" "block" {
 }
 
 resource "liquidweb_cloud_block_storage" "testing_block_volume" {
-  domain = "terraform-block${random_id.block.dec}.us-midwest-2.hostbaitor.com"
+  domain = "terraform-block${random_id.block.dec}.us-midwest-2.example.com"
   size   = 10
 }
 

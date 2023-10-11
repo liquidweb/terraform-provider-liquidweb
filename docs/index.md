@@ -43,6 +43,6 @@ resource "liquidweb_cloud_server" "server" {
 ## Argument Reference
 
 - `LWAPI_USERNAME`
-- `LWAPI_PASSWORD``
+- `LWAPI_PASSWORD`
 
 These environment variables are used to set your credentials for the provider.
